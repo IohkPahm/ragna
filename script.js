@@ -311,6 +311,27 @@
         window.magneticManager = new MagneticFieldManager();
 
         // ═══════════════════════════════════════
+        // LENIS SMOOTH SCROLLING INITIALIZATION
+        // ═══════════════════════════════════════
+        const lenis = new Lenis({
+            duration: 1.4, // Thời gian trượt (giây) - tăng nhẹ để cuộn siêu êm
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutExpo
+            smoothWheel: true,
+            smoothTouch: false,
+        });
+
+        // Cập nhật ScrollTrigger của GSAP mỗi khi Lenis scroll
+        lenis.on('scroll', ScrollTrigger.update);
+
+        // Đưa hàm animation frame của Lenis vào gsap ticker để đồng bộ FPS
+        gsap.ticker.add((time) => {
+            lenis.raf(time * 1000);
+        });
+
+        // Tắt lagSmoothing của GSAP để tránh giật khi chuyển tab/lag nhẹ
+        gsap.ticker.lagSmoothing(0);
+
+        // ═══════════════════════════════════════
         // SHADERS & WEBGL COMPONENT FOR BURN TRANSITION
         // ═══════════════════════════════════════
         const vertexShaderSource = `
@@ -775,9 +796,9 @@
             scrollTrigger: {
                 trigger: '.animation-wrapper',
                 start: 'top top',
-                end: '+=1000%',
+                end: '+=1500%', // Tăng quãng đường cuộn lên 1500% để làm chậm hoạt ảnh
                 pin: true,
-                scrub: 1,
+                scrub: 1.5, // Tăng độ mượt và quán tính khi cuộn đuổi theo
                 anticipatePin: 1,
                 onUpdate: self => {
                     const pct = Math.round(self.progress * 100);
