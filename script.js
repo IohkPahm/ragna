@@ -798,7 +798,7 @@
                 start: 'top top',
                 end: '+=1500%', // Tăng quãng đường cuộn lên 1500% để làm chậm hoạt ảnh
                 pin: true,
-                scrub: 1.5, // Tăng độ mượt và quán tính khi cuộn đuổi theo
+                scrub: true, // Trỏ 1:1 theo thanh cuộn (đã được làm mượt bởi Lenis)
                 anticipatePin: 1,
                 onUpdate: self => {
                     const pct = Math.round(self.progress * 100);
