@@ -1,0 +1,304 @@
+* {
+            box-sizing: border-box;
+        }
+
+        /* Ẩn thanh cuộn cho toàn bộ trang và mọi phần tử nhưng vẫn cho phép cuộn */
+        *::-webkit-scrollbar {
+            display: none;
+        }
+        * {
+            -ms-overflow-style: none;  /* IE và Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        /* ═══════════════════════════════════
+           FONT FACES
+           ═══════════════════════════════════ */
+        @font-face {
+            font-family: 'TrajanProLight';
+            src: url('fonts/TrajanPro3Light.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Cinzel';
+            src: url('fonts/Cinzel-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Cinzel';
+            src: url('fonts/Cinzel-Bold.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Avenir';
+            src: url('fonts/Avenir-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Avenir';
+            src: url('fonts/Avenir-Bold.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        /* ═══════════════════════════════════
+           BASE
+           ═══════════════════════════════════ */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            background-color: #000000;
+            overflow-x: hidden;
+        }
+
+        /* ═══════════════════════════════════
+           ANIMATION WRAPPER (Pinned by GSAP)
+           ═══════════════════════════════════ */
+        .animation-wrapper {
+            width: 100%;
+        }
+
+        .scroll-container {
+            position: relative;
+            width: 100%;
+            max-width: 1672px;
+            margin: 0 auto;
+            aspect-ratio: 1672 / 941;
+            overflow: hidden;
+        }
+
+        /* ═══════════════════════════════════
+           LAYER 1: NỀN DÙNG CHUNG
+           ═══════════════════════════════════ */
+        .shared-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url('assets/images/background.webp');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 130% 130%;
+            z-index: 1;
+        }
+
+        /* Lớp tối phủ nền (ban đầu tối đen hoàn toàn) */
+        .bg-darken {
+            position: absolute;
+            inset: 0;
+            background: #000;
+            opacity: 1; /* Thay đổi từ 0.85 thành 1 để tối đen hoàn toàn từ 0% đến 19% */
+            z-index: 2;
+        }
+
+        /* ═══════════════════════════════════
+           LAYER 3: INTRO CHARACTER
+           ═══════════════════════════════════ */
+        .intro-layer {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            opacity: 0;
+            will-change: transform, opacity;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .intro-char {
+            height: 100%;
+            width: auto;
+            display: block;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* ═══════════════════════════════════
+           LAYER 4 & 6: HERO CHARACTER & TEXT
+           ═══════════════════════════════════ */
+        .hero-char-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+        }
+
+        .hero-text-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 6;
+            container-type: inline-size;
+            pointer-events: none;
+        }
+
+        .title-ragna {
+            position: absolute;
+            left: 30.622010cqw;
+            width: auto;
+            top: 2.392344cqw;
+            text-align: left;
+            font-family: 'TrajanProLight', serif;
+            font-size: 6.519139cqw;
+            font-weight: normal;
+            line-height: 1;
+            letter-spacing: 0.420000em;
+            color: rgba(255, 255, 255, 0.9);
+            z-index: 1;
+            opacity: 0;
+        }
+
+        .header-line {
+            position: absolute;
+            left: 29.724880cqw;  /* 497px / 1672px */
+            right: 25.657895cqw; /* 1672px - 1243px = 429px -> 429px / 1672px */
+            top: 8.672249cqw;   /* 145px / 1672px */
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.25);
+            z-index: 1;
+            transform: scaleX(0);
+            transform-origin: left center;
+        }
+
+        .character-ragna {
+            position: absolute;
+            left: 11.48325%;  /* 192px / 1672px */
+            top: 5.41977%;   /* 51px / 941px */
+            width: 80.38278%; /* 1344px / 1672px */
+            height: 94.58023%;/* 890px / 941px */
+            display: block;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0;
+            will-change: transform, opacity;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .subtitle-hope {
+            position: absolute;
+            left: 31.578947cqw;
+            width: auto;
+            top: 9.389952cqw;
+            font-family: 'TrajanProLight', serif;
+            font-size: 1.076555cqw;
+            font-weight: normal;
+            line-height: 1;
+            letter-spacing: 0.220000em;
+            color: rgba(255, 255, 255, 0.85);
+            text-align: left;
+            z-index: 3;
+            opacity: 0;
+        }
+
+        .left-text-block {
+            position: absolute;
+            left: 13.576555cqw;  /* (197px + 30px) / 1672px -> 227px */
+            top: 30.203349cqw;   /* (520px - 15px) / 1672px -> 505px */
+            width: 22.5cqw;      /* 15cqw * 1.5 */
+            font-family: 'Avenir', sans-serif;
+            font-size: 1.2111cqw; /* 0.8074cqw * 1.5 */
+            line-height: 1.28;
+            color: rgba(255, 255, 255, 0.85);
+            text-align: left;
+            z-index: 3;
+            opacity: 0;
+        }
+
+        .right-text-block {
+            position: absolute;
+            left: 72.428230cqw;  /* (1161px + 50px) / 1672px -> 1211px */
+            top: 12.260766cqw;   /* (225px - 20px) / 1672px -> 205px */
+            width: 22.5cqw;      /* 15cqw * 1.5 */
+            font-family: 'Avenir', sans-serif;
+            font-size: 1.2111cqw; /* 0.8074cqw * 1.5 */
+            line-height: 1.11;
+            color: rgba(255, 255, 255, 0.85);
+            text-align: left;
+            z-index: 3;
+            opacity: 0;
+        }
+
+        .reveal-word {
+            display: inline-block;
+            opacity: 0.25; /* Ghost text opacity initially */
+        }
+
+        .magnetic-char {
+            display: inline-block;
+            will-change: transform, color, text-shadow;
+            transition: none !important;
+        }
+
+        /* ═══════════════════════════════════
+           LAYER Pre-Intro: MŨ GIÁP & MẮT SÁNG
+           ═══════════════════════════════════ */
+        .pre-intro-layer {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 4; /* Đặt z-index cao hơn .intro-layer (3) để đôi mắt sáng luôn nằm trên trong lúc fade-in */
+            opacity: 0;
+            will-change: transform, opacity;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .pre-intro-char {
+            height: 100%;
+            width: auto;
+            display: block;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* ═══════════════════════════════════
+           BURN TRANSITION OVERLAY
+           ═══════════════════════════════════ */
+        burn-transition {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .under-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .under-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* ═══════════════════════════════════
+           SCROLL PERCENTAGE (Góc trên bên trái)
+           ═══════════════════════════════════ */
+        .scroll-percentage {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            z-index: 100;
+            font-family: 'Avenir', sans-serif;
+            font-size: 13px;
+            font-weight: normal;
+            letter-spacing: 0.15em;
+            color: rgba(255, 255, 255, 0.45);
+            pointer-events: none;
+            user-select: none;
+        }
