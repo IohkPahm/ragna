@@ -1,6 +1,22 @@
+# macOS
 .DS_Store
+**/.DS_Store
+
+# Scratch & dev tools
 scratch/
 *.py
+
+# Backup & temp files
 index.backup.html
 index copy.html
+
+# Archives
 cinzel.zip
+
+# Unused raw assets
+"D7DF5E17-7165-4226-BBD2-1D9BFB378035 (1).png"
+"Knockout0 (1).png"
+ragna.JPG
+begin.png
+begin169.png
+"burn-transition (1).html"

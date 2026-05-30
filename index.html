@@ -85,7 +85,7 @@
         .shared-bg {
             position: absolute;
             inset: 0;
-            background-image: url('background.png');
+            background-image: url('assets/images/background.png');
             background-repeat: no-repeat;
             background-position: center;
             background-size: 130% 130%;
@@ -312,7 +312,7 @@
 
             <!-- Lớp Under (nền cố định đằng sau, z-index: 2, ban đầu ẩn) -->
             <div class="under-layer">
-                <img src="under.png" class="under-img" alt="Under Section">
+                <img src="assets/images/under.png" class="under-img" alt="Under Section">
             </div>
 
             <!-- Nền dùng chung (zoom 130% → 100%) -->
@@ -323,17 +323,17 @@
 
             <!-- Lớp Pre-Intro: mũ giáp và mắt sáng -->
             <div class="pre-intro-layer">
-                <img src="pre-intro-char-169.png" class="pre-intro-char" alt="Pre Intro Eyes">
+                <img src="assets/images/pre-intro-char-169.png" class="pre-intro-char" alt="Pre Intro Eyes">
             </div>
 
             <!-- Lớp Intro: nhân vật cận cảnh -->
             <div class="intro-layer">
-                <img src="intro-char-169.png" class="intro-char" alt="Intro Character">
+                <img src="assets/images/intro-char-169.png" class="intro-char" alt="Intro Character">
             </div>
 
             <!-- Lớp Hero Nhân vật (z-index: 4) -->
             <div class="hero-char-layer">
-                <img src="character-ragna.png" class="character-ragna" alt="Character Ragna">
+                <img src="assets/images/character-ragna.png" class="character-ragna" alt="Character Ragna">
             </div>
 
             <!-- Burn Transition Overlay (z-index: 5) -->
@@ -1144,7 +1144,7 @@
         }
 
         logDebug("Đang bắt đầu tải ảnh...");
-        loadImages(['background.png', 'character-ragna.png'])
+        loadImages(['assets/images/background.png', 'assets/images/character-ragna.png'])
             .then(([bgImg, charImg]) => {
                 logDebug("Đã tải xong toàn bộ ảnh!");
                 logDebug(`bgImg: ${bgImg.width}x${bgImg.height}`);
