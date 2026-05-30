@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Burn Transition</title>
+  <meta name="description" content="Standalone WebGL burn transition component.">
+  <style>
+    :root {
+      --bg: #050505;
+      --ink: #f5efe4;
+      --muted: rgba(245, 239, 228, 0.62);
+      --faint: rgba(245, 239, 228, 0.38);
+      --line: rgba(255, 255, 255, 0.14);
+      --panel: rgba(10, 10, 10, 0.68);
+      --panel-strong: rgba(14, 14, 13, 0.88);
+      --ember: #ff6f2a;
+      --ash: #d9d6ca;
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-width: 320px;
+      background: var(--bg);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      background:
+        radial-gradient(circle at 70% 18%, rgba(255, 111, 42, 0.13), transparent 23%),
+        radial-gradient(circle at 18% 84%, rgba(217, 214, 202, 0.10), transparent 28%),
+        linear-gradient(140deg, #15110d 0%, #060606 48%, #010101 100%);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x: hidden;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button,
+    input[type="range"],
+    input[type="color"],
+    select {
+      cursor: pointer;
+    }
+
+    .site {
+      position: relative;
+      min-height: 100vh;
+      overflow: visible;
+    }
+
+    .site::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 70px 70px;
+      mask-image: radial-gradient(circle at center, black 0 45%, transparent 84%);
+      opacity: 0.2;
+    }
+
+    .site::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at center, transparent 0 36%, rgba(0, 0, 0, 0.38) 78%, rgba(0, 0, 0, 0.82) 100%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.36), transparent 25%, transparent 75%, rgba(0, 0, 0, 0.4));
+    }
+
+    .nav,
+    .hero,
+    .intro,
+    .scroll-test,
+    .section,
+    .variants {
+      position: relative;
+      z-index: 2;
+      width: min(1140px, calc(100vw - 36px));
+      margin-inline: auto;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      min-height: 72px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 780;
+    }
+
+    .brand::before {
+      content: "";
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 34% 34%, #fff8d9 0 14%, transparent 16%),
+        radial-gradient(circle, var(--ember) 0 34%, #5c1606 68%, transparent 72%);
+      box-shadow: 0 0 24px rgba(255, 111, 42, 0.4);
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(8, 8, 8, 0.62);
+      color: var(--ink);
+      font-weight: 740;
+      line-height: 1;
+      text-decoration: none;
+      backdrop-filter: blur(18px);
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .button.primary {
+      border-color: rgba(245, 239, 228, 0.84);
+      background: var(--ink);
+      color: #080705;
+    }
+
+    .button:hover {
+      border-color: rgba(255, 255, 255, 0.36);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .button.primary:hover {
+      background: #fffaf0;
+    }
+
+    .button:active {
+      transform: translateY(1px);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 0.88fr) minmax(440px, 1.18fr);
+      align-items: center;
+      gap: clamp(34px, 6vw, 76px);
+      min-height: calc(100vh - 72px);
+      padding: 48px 0 76px;
+    }
+
+    .intro {
+      display: grid;
+      align-items: center;
+      min-height: calc(84vh - 72px);
+      padding: 64px 0 96px;
+    }
+
+    .intro .copy {
+      max-width: 780px;
+    }
+
+    .intro h1 {
+      max-width: 10ch;
+    }
+
+    .scroll-test {
+      min-height: 280vh;
+    }
+
+    .sticky-demo {
+      position: sticky;
+      top: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 0.82fr) minmax(440px, 1.18fr);
+      align-items: center;
+      gap: clamp(30px, 6vw, 74px);
+      min-height: 100vh;
+      padding: 72px 0 76px;
+    }
+
+    .scroll-copy {
+      display: grid;
+      gap: 22px;
+      align-content: center;
+    }
+
+    .eyebrow {
+      width: fit-content;
+      min-height: 30px;
+      padding: 7px 11px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      background: rgba(8, 8, 8, 0.56);
+      color: var(--faint);
+      font-size: 0.78rem;
+      font-weight: 760;
+      line-height: 1;
+    }
+
+    .scroll-copy h2 {
+      max-width: 8ch;
+      margin: 0;
+      font-size: clamp(2.6rem, 6vw, 5.8rem);
+      line-height: 0.92;
+      letter-spacing: 0;
+    }
+
+    .progress-card {
+      display: grid;
+      gap: 10px;
+      width: min(100%, 420px);
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 760;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .progress-track {
+      height: 7px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ff6f2a, #ffd9a0);
+      box-shadow: 0 0 22px rgba(255, 111, 42, 0.42);
+    }
+
+    .scroll-hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      font-weight: 620;
+      line-height: 1.6;
+    }
+
+    .copy {
+      display: grid;
+      gap: 24px;
+      align-content: center;
+    }
+
+    h1 {
+      max-width: 8ch;
+      margin: 0;
+      font-size: clamp(3.6rem, 7.5vw, 7rem);
+      font-weight: 780;
+      line-height: 0.9;
+      letter-spacing: 0;
+      text-wrap: balance;
+    }
+
+    .lead {
+      max-width: 440px;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 2vw, 1.18rem);
+      font-weight: 620;
+      line-height: 1.55;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .demo {
+      display: grid;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .stage {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      min-height: 360px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 18px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 66% 24%, rgba(255, 111, 42, 0.28), transparent 24%),
+        radial-gradient(circle at 26% 72%, rgba(255, 230, 156, 0.16), transparent 26%),
+        linear-gradient(140deg, #191714, #050505);
+      box-shadow: 0 36px 120px rgba(0, 0, 0, 0.56);
+    }
+
+    .stage-content {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      align-content: end;
+      padding: clamp(22px, 4vw, 44px);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 32%),
+        radial-gradient(circle at 68% 28%, rgba(255, 255, 255, 0.15), transparent 18%);
+    }
+
+    .stage-content strong {
+      display: block;
+      max-width: 8ch;
+      font-size: clamp(2.2rem, 6vw, 5rem);
+      line-height: 0.92;
+      letter-spacing: 0;
+    }
+
+    .stage-content span {
+      display: block;
+      max-width: 320px;
+      margin-top: 16px;
+      color: var(--muted);
+      font-weight: 650;
+      line-height: 1.5;
+    }
+
+    burn-transition {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(120px, 150px) repeat(3, minmax(112px, 1fr)) minmax(64px, 82px) auto;
+      gap: 10px;
+      align-items: end;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .field label,
+    .field span {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.74rem;
+      line-height: 1;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .field output {
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+
+    select,
+    .control-button,
+    .color-control {
+      height: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 6px;
+      background: var(--panel-strong);
+      color: var(--ink);
+      outline: none;
+    }
+
+    select {
+      width: 100%;
+      padding: 0 34px 0 12px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--ember);
+    }
+
+    .color-control {
+      width: 54px;
+      padding: 4px;
+    }
+
+    .control-button {
+      min-width: 86px;
+      padding: 0 12px;
+      font-weight: 720;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .control-button:hover,
+    select:hover,
+    .color-control:hover {
+      border-color: rgba(255, 255, 255, 0.34);
+    }
+
+    .control-button:active {
+      transform: translateY(1px);
+    }
+
+    .section {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: clamp(22px, 5vw, 62px);
+      align-items: start;
+      padding: 24px 0 64px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 4rem);
+      line-height: 0.96;
+      letter-spacing: 0;
+    }
+
+    .section p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      font-weight: 620;
+      line-height: 1.65;
+    }
+
+    .variants {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      padding: 0 0 46px;
+    }
+
+    .tile {
+      position: relative;
+      min-height: 280px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 65% 30%, rgba(255,255,255,0.08), transparent 22%),
+        linear-gradient(140deg, #171717, #050505);
+    }
+
+    .tile-label {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      z-index: 1;
+      color: var(--ink);
+      font-weight: 760;
+    }
+
+    @media (max-width: 1060px) {
+      .hero,
+      .sticky-demo,
+      .section {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+        padding-top: 54px;
+      }
+
+      .intro {
+        min-height: auto;
+        padding-top: 54px;
+      }
+
+      .scroll-test {
+        min-height: 240vh;
+      }
+
+      .sticky-demo {
+        align-content: start;
+        padding-top: 40px;
+      }
+
+      h1 {
+        max-width: 10ch;
+      }
+
+      .controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .variants {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .nav,
+      .hero,
+      .intro,
+      .scroll-test,
+      .section,
+      .variants {
+        width: min(100vw - 24px, 1140px);
+      }
+
+      .nav {
+        min-height: 64px;
+      }
+
+      h1 {
+        font-size: clamp(3rem, 16vw, 4.8rem);
+      }
+
+      .actions,
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .stage {
+        min-height: 300px;
+        border-radius: 14px;
+      }
+
+      .scroll-copy h2 {
+        font-size: clamp(2.6rem, 14vw, 4rem);
+      }
+
+      .scroll-test {
+        min-height: 230vh;
+      }
+
+      .color-control,
+      .control-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="site">
+    <nav class="nav" aria-label="Primary navigation">
+      <div class="brand">Burn Transition</div>
+      <a class="button" href="#scroll-test">Jump to test</a>
+    </nav>
+
+    <section class="intro">
+      <div class="copy">
+        <h1>Scroll burn test</h1>
+        <p class="lead">This page ties the burn mask progress directly to scroll position. Scroll through the pinned section below and watch the edge move from transparent to covered.</p>
+        <div class="actions">
+          <a class="button primary" href="#scroll-test">Start scroll test</a>
+          <a class="button" href="#variants">View variants</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="scroll-test" id="scroll-test" aria-label="Scroll-controlled burn transition test">
+      <div class="sticky-demo">
+        <div class="scroll-copy">
+          <span class="eyebrow">Scroll controlled</span>
+          <h2>The mask follows your scroll.</h2>
+          <p class="scroll-hint">The progress bar below is the same value sent into the WebGL shader. At 0% the burn layer is transparent. At 100% it has swept across the full stage.</p>
+          <div class="progress-card" aria-label="Scroll transition progress">
+            <div class="progress-label">
+              <span>Transition progress</span>
+              <output id="scrollValue">0%</output>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <div class="progress-fill" id="scrollFill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo">
+          <div class="stage">
+            <div class="stage-content">
+              <strong>Underlying content</strong>
+              <span>If the component is scroll-linked, this content disappears behind the burn layer as you move down.</span>
+            </div>
+            <burn-transition
+              id="mainBurn"
+              progress="-0.16"
+              color="#d9d6ca"
+              transition-color="#ff6f2a"
+              noise-scale="0.37"
+              noise-intensity="0.36"
+              edge-softness="0.42"
+              bloom="0.72"
+              speed="0.18"
+              movement-x="0"
+              movement-y="0.55"
+            ></burn-transition>
+          </div>
+          <form class="controls" id="controls" aria-label="Burn transition controls">
+            <label class="field">
+              <span>Movement</span>
+              <select id="movement">
+                <option value="-1">Left</option>
+                <option value="0" selected>Center</option>
+                <option value="1">Right</option>
+              </select>
+            </label>
+            <div class="field">
+              <label for="noise">Noise <output id="noiseValue">0.36</output></label>
+              <input id="noise" type="range" min="0" max="1" step="0.01" value="0.36">
+            </div>
+            <div class="field">
+              <label for="edge">Edge <output id="edgeValue">0.42</output></label>
+              <input id="edge" type="range" min="0" max="1" step="0.01" value="0.42">
+            </div>
+            <div class="field">
+              <label for="bloom">Bloom <output id="bloomValue">0.72</output></label>
+              <input id="bloom" type="range" min="0" max="1" step="0.01" value="0.72">
+            </div>
+            <label class="field">
+              <span>Ember</span>
+              <input class="color-control" id="ember" type="color" value="#ff6f2a" aria-label="Transition color">
+            </label>
+            <button class="control-button" id="replay" type="button">Top</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Confirmed by position.</h2>
+      <p>The pinned test above uses page scroll to set the shader progress. Scroll still also offsets the internal noise field, so the edge keeps its living burn texture while the transition itself is controlled by your scroll position.</p>
+    </section>
+
+    <section class="variants" id="variants" aria-label="Burn transition variants">
+      <div class="tile">
+        <span class="tile-label">Ash edge</span>
+        <burn-transition color="#d9d6ca" transition-color="#ffffff" noise-intensity="0.24" edge-softness="0.52" bloom="0.42" movement-x="-1" movement-y="0.35"></burn-transition>
+      </div>
+      <div class="tile">
+        <span class="tile-label">Hot ember</span>
+        <burn-transition color="#1b0b05" transition-color="#ff8a1f" noise-scale="0.52" noise-intensity="0.48" edge-softness="0.28" bloom="0.9" movement-x="1" movement-y="0.7"></burn-transition>
+      </div>
+      <div class="tile">
+        <span class="tile-label">Soft veil</span>
+        <burn-transition color="#2a2720" transition-color="#ffd9a0" noise-scale="0.28" noise-intensity="0.18" edge-softness="0.72" bloom="0.55" movement-x="0" movement-y="0.25"></burn-transition>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const vertexShaderSource = `
+      attribute vec2 aPosition;
+      varying vec2 vUv;
+
+      void main() {
+        vUv = aPosition * 0.5 + 0.5;
+        gl_Position = vec4(aPosition, 0.0, 1.0);
+      }
+    `;
+
+    const fragmentShaderSource = `
+      precision mediump float;
+
+      varying vec2 vUv;
+      uniform vec3 uColor;
+      uniform vec3 uTransitionColor;
+      uniform float uNoiseScale;
+      uniform float uNoiseIntensity;
+      uniform float uTime;
+      uniform float uProgress;
+      uniform float uEdgeSoftness;
+      uniform float uBloom;
+      uniform float uMovementX;
+      uniform float uMovementY;
+      uniform float uParallax;
+      uniform float uAspect;
+
+      float random(vec2 st) {
+        return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+      }
+
+      float noise(vec2 st) {
+        vec2 i = floor(st);
+        vec2 f = fract(st);
+        float a = random(i);
+        float b = random(i + vec2(1.0, 0.0));
+        float c = random(i + vec2(0.0, 1.0));
+        float d = random(i + vec2(1.0, 1.0));
+        vec2 u = f * f * (3.0 - 2.0 * f);
+        return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+      }
+
+      float fbm(vec2 st) {
+        float value = 0.0;
+        float amplitude = 0.5;
+        for (int i = 0; i < 5; i++) {
+          value += amplitude * noise(st);
+          st *= 2.03;
+          amplitude *= 0.5;
+        }
+        return value;
+      }
+
+      float detailedNoise(vec2 st) {
+        float value = 0.0;
+        float amplitude = 0.5;
+        for (int i = 0; i < 6; i++) {
+          value += amplitude * noise(st);
+          st *= 2.25;
+          amplitude *= 0.45;
+        }
+        return value;
+      }
+
+      void main() {
+        float scale = mix(1.0, 20.0, clamp(uNoiseScale, 0.0, 1.0));
+        float intensity = mix(0.0, 0.5, clamp(uNoiseIntensity, 0.0, 1.0));
+        float softness = mix(0.01, 0.2, clamp(uEdgeSoftness, 0.0, 1.0));
+        float grainScale = 82.0;
+        float horizontalOffset = uTime * uMovementX;
+        float verticalOffset = uTime * uMovementY;
+        float baseLine = mix(-0.18, 1.18, clamp(uProgress, 0.0, 1.0)) + uParallax;
+
+        vec2 edgeCoord = vec2(
+          vUv.x * uAspect * scale + horizontalOffset,
+          vUv.y * 3.0 + verticalOffset * 0.6
+        );
+        float edgeNoise = fbm(edgeCoord);
+        float mainEdge = baseLine + (edgeNoise - 0.5) * intensity;
+
+        vec2 thickCoord = vec2(
+          vUv.x * uAspect * scale * 2.35 + horizontalOffset * 0.7,
+          vUv.y * 2.0 + verticalOffset * 0.4 + 100.0
+        );
+        float thicknessNoise = fbm(thickCoord);
+        float localThickness = mix(softness * 0.1, softness, thicknessNoise);
+        float lowerBound = mainEdge - localThickness * 0.45;
+        float upperBound = mainEdge + localThickness * 0.65;
+
+        vec2 grainCoord = vec2(
+          vUv.x * uAspect * grainScale * 3.0 + horizontalOffset * 0.5,
+          vUv.y * grainScale * 3.0 + verticalOffset * 0.3
+        );
+        float grain = detailedNoise(grainCoord);
+        vec2 fiberCoord = vec2(
+          vUv.x * uAspect * grainScale * 8.0 + horizontalOffset * 0.3,
+          vUv.y * grainScale * 2.0 + verticalOffset * 0.2
+        );
+        float fiber = noise(fiberCoord);
+        float combinedGrain = grain * 0.62 + fiber * 0.38;
+
+        float distToEdge = abs(vUv.y - mainEdge);
+        float glow = smoothstep(localThickness * 2.8, 0.0, distToEdge) * uBloom;
+        vec3 glowColor = uTransitionColor * glow * 1.25;
+
+        if (vUv.y < lowerBound) {
+          gl_FragColor = vec4(min(uColor + glowColor * 0.35, vec3(1.0)), 1.0);
+        } else if (vUv.y < mainEdge) {
+          float t = (vUv.y - lowerBound) / max(mainEdge - lowerBound, 0.001);
+          float grainThreshold = 1.0 - pow(t, 1.45) - thicknessNoise * 0.2;
+          vec3 color = combinedGrain > grainThreshold ? uTransitionColor : uColor;
+          gl_FragColor = vec4(min(color + glowColor, vec3(1.0)), 1.0);
+        } else if (vUv.y < upperBound) {
+          float t = (vUv.y - mainEdge) / max(upperBound - mainEdge, 0.001);
+          float grainThreshold = pow(t, 1.15) + thicknessNoise * 0.15;
+          if (combinedGrain > grainThreshold) {
+            float alpha = mix(1.0, 0.45, t);
+            gl_FragColor = vec4(min(uTransitionColor + glowColor, vec3(1.0)), alpha);
+          } else if (glow > 0.02) {
+            gl_FragColor = vec4(uTransitionColor, glow * 0.46);
+          } else {
+            discard;
+          }
+        } else if (glow > 0.03) {
+          gl_FragColor = vec4(uTransitionColor, glow * 0.34);
+        } else {
+          discard;
+        }
+      }
+    `;
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function parseHexColor(value, fallback = [0.85, 0.84, 0.79]) {
+      if (!value || typeof value !== "string") return fallback;
+      const hex = value.replace("#", "").trim();
+      if (hex.length !== 3 && hex.length !== 6) return fallback;
+      const full = hex.length === 3 ? hex.split("").map((char) => char + char).join("") : hex;
+      return [
+        parseInt(full.slice(0, 2), 16) / 255,
+        parseInt(full.slice(2, 4), 16) / 255,
+        parseInt(full.slice(4, 6), 16) / 255
+      ];
+    }
+
+    function createShader(gl, type, source) {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        const info = gl.getShaderInfoLog(shader);
+        gl.deleteShader(shader);
+        throw new Error(info || "Shader compile failed");
+      }
+      return shader;
+    }
+
+    function createProgram(gl) {
+      const vertex = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+      const fragment = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+      const program = gl.createProgram();
+      gl.attachShader(program, vertex);
+      gl.attachShader(program, fragment);
+      gl.linkProgram(program);
+      gl.deleteShader(vertex);
+      gl.deleteShader(fragment);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        const info = gl.getProgramInfoLog(program);
+        gl.deleteProgram(program);
+        throw new Error(info || "Program link failed");
+      }
+      return program;
+    }
+
+    class BurnTransition extends HTMLElement {
+      static observedAttributes = [
+        "color",
+        "transition-color",
+        "noise-scale",
+        "noise-intensity",
+        "edge-softness",
+        "bloom",
+        "speed",
+        "movement-x",
+        "movement-y",
+        "parallax",
+        "progress"
+      ];
+
+      constructor() {
+        super();
+        this.attachShadow({ mode: "open" });
+        this.canvas = document.createElement("canvas");
+        this.shadowRoot.innerHTML = `
+          <style>
+            :host {
+              display: block;
+              position: relative;
+              overflow: hidden;
+              contain: content;
+            }
+
+            canvas {
+              display: block;
+              width: 100%;
+              height: 100%;
+            }
+          </style>
+        `;
+        this.shadowRoot.append(this.canvas);
+        this.progress = 0.5;
+        this.startProgress = 0.5;
+        this.targetProgress = 0.5;
+        this.animationStart = 0;
+        this.animationDuration = 1500;
+        this.baseTime = 0;
+        this.lastTime = 0;
+        this.scrollOffset = 0;
+        this.lastScrollY = window.scrollY || window.pageYOffset || 0;
+        this.raf = 0;
+        this.resize = this.resize.bind(this);
+        this.renderLoop = this.renderLoop.bind(this);
+        this.handleScroll = this.handleScroll.bind(this);
+      }
+
+      connectedCallback() {
+        this.init();
+        this.resizeObserver = new ResizeObserver(this.resize);
+        this.resizeObserver.observe(this);
+        window.addEventListener("scroll", this.handleScroll, { passive: true });
+        if (this.hasAttribute("progress")) {
+          this.progress = clamp(Number(this.getAttribute("progress")), -0.2, 1.2);
+        } else {
+          this.replay();
+        }
+        this.raf = requestAnimationFrame(this.renderLoop);
+      }
+
+      disconnectedCallback() {
+        cancelAnimationFrame(this.raf);
+        this.resizeObserver?.disconnect();
+        window.removeEventListener("scroll", this.handleScroll);
+        if (this.gl) {
+          this.gl.deleteBuffer(this.buffer);
+          this.gl.deleteProgram(this.program);
+        }
+      }
+
+      attributeChangedCallback() {
+        this.render();
+      }
+
+      get speed() {
+        return Number(this.getAttribute("speed") || 0.1);
+      }
+
+      get shouldParallax() {
+        return this.getAttribute("parallax") === "true";
+      }
+
+      get externalProgress() {
+        if (!this.hasAttribute("progress")) return null;
+        const value = Number(this.getAttribute("progress"));
+        return Number.isFinite(value) ? clamp(value, -0.2, 1.2) : this.progress;
+      }
+
+      init() {
+        this.gl = this.canvas.getContext("webgl", { alpha: true, premultipliedAlpha: false, antialias: true });
+        if (!this.gl) return;
+        this.program = createProgram(this.gl);
+        this.gl.useProgram(this.program);
+        this.locations = {
+          position: this.gl.getAttribLocation(this.program, "aPosition"),
+          color: this.gl.getUniformLocation(this.program, "uColor"),
+          transitionColor: this.gl.getUniformLocation(this.program, "uTransitionColor"),
+          noiseScale: this.gl.getUniformLocation(this.program, "uNoiseScale"),
+          noiseIntensity: this.gl.getUniformLocation(this.program, "uNoiseIntensity"),
+          time: this.gl.getUniformLocation(this.program, "uTime"),
+          progress: this.gl.getUniformLocation(this.program, "uProgress"),
+          edgeSoftness: this.gl.getUniformLocation(this.program, "uEdgeSoftness"),
+          bloom: this.gl.getUniformLocation(this.program, "uBloom"),
+          movementX: this.gl.getUniformLocation(this.program, "uMovementX"),
+          movementY: this.gl.getUniformLocation(this.program, "uMovementY"),
+          parallax: this.gl.getUniformLocation(this.program, "uParallax"),
+          aspect: this.gl.getUniformLocation(this.program, "uAspect")
+        };
+        const vertices = new Float32Array([
+          -1, -1,
+          1, -1,
+          -1, 1,
+          -1, 1,
+          1, -1,
+          1, 1
+        ]);
+        this.buffer = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
+        this.gl.enableVertexAttribArray(this.locations.position);
+        this.gl.vertexAttribPointer(this.locations.position, 2, this.gl.FLOAT, false, 0, 0);
+      }
+
+      resize() {
+        if (!this.gl) return;
+        const rect = this.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const width = Math.max(1, Math.floor(rect.width * dpr));
+        const height = Math.max(1, Math.floor(rect.height * dpr));
+        if (this.canvas.width !== width || this.canvas.height !== height) {
+          this.canvas.width = width;
+          this.canvas.height = height;
+        }
+        this.gl.viewport(0, 0, width, height);
+        this.render();
+      }
+
+      handleScroll() {
+        const current = window.scrollY || window.pageYOffset || 0;
+        const delta = current - this.lastScrollY;
+        this.scrollOffset += delta * 0.004;
+        this.lastScrollY = current;
+      }
+
+      parallaxOffset() {
+        if (!this.shouldParallax) return 0;
+        const rect = this.getBoundingClientRect();
+        const viewport = window.innerHeight || 1;
+        const center = rect.top + rect.height * 0.5;
+        return clamp((center / viewport - 0.5) * -0.28, -0.18, 0.18);
+      }
+
+      replay() {
+        this.startProgress = -0.16;
+        this.targetProgress = 1.12;
+        this.progress = this.startProgress;
+        this.animationStart = performance.now();
+      }
+
+      renderLoop(now) {
+        const delta = this.lastTime ? (now - this.lastTime) / 1000 : 0;
+        this.lastTime = now;
+        this.baseTime += delta * this.speed * 4;
+        const externalProgress = this.externalProgress;
+        if (externalProgress !== null) {
+          this.progress = externalProgress;
+          this.animationStart = 0;
+        } else if (this.animationStart) {
+          const t = clamp((now - this.animationStart) / this.animationDuration, 0, 1);
+          const eased = t * t * (3 - 2 * t);
+          this.progress = this.startProgress + (this.targetProgress - this.startProgress) * eased;
+          if (t >= 1) this.animationStart = 0;
+        }
+        this.render();
+        this.raf = requestAnimationFrame(this.renderLoop);
+      }
+
+      render() {
+        if (!this.gl || !this.program) return;
+        const gl = this.gl;
+        const rect = this.getBoundingClientRect();
+        const baseColor = parseHexColor(this.getAttribute("color") || "#d9d6ca");
+        const transitionColor = parseHexColor(this.getAttribute("transition-color") || "#ff6f2a", [1, 0.44, 0.16]);
+        gl.useProgram(this.program);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.uniform3f(this.locations.color, baseColor[0], baseColor[1], baseColor[2]);
+        gl.uniform3f(this.locations.transitionColor, transitionColor[0], transitionColor[1], transitionColor[2]);
+        gl.uniform1f(this.locations.noiseScale, Number(this.getAttribute("noise-scale") || 0.37));
+        gl.uniform1f(this.locations.noiseIntensity, Number(this.getAttribute("noise-intensity") || 0.3));
+        gl.uniform1f(this.locations.time, this.baseTime + this.scrollOffset);
+        gl.uniform1f(this.locations.progress, this.progress);
+        gl.uniform1f(this.locations.edgeSoftness, Number(this.getAttribute("edge-softness") || 0.4));
+        gl.uniform1f(this.locations.bloom, Number(this.getAttribute("bloom") || 0.5));
+        gl.uniform1f(this.locations.movementX, Number(this.getAttribute("movement-x") || 0));
+        gl.uniform1f(this.locations.movementY, Number(this.getAttribute("movement-y") || 0.5));
+        gl.uniform1f(this.locations.parallax, this.parallaxOffset());
+        gl.uniform1f(this.locations.aspect, rect.height > 0 ? rect.width / rect.height : 1);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+      }
+    }
+
+    customElements.define("burn-transition", BurnTransition);
+
+    const mainBurn = document.querySelector("#mainBurn");
+    const controls = document.querySelector("#controls");
+    const movement = document.querySelector("#movement");
+    const noise = document.querySelector("#noise");
+    const edge = document.querySelector("#edge");
+    const bloom = document.querySelector("#bloom");
+    const ember = document.querySelector("#ember");
+    const noiseValue = document.querySelector("#noiseValue");
+    const edgeValue = document.querySelector("#edgeValue");
+    const bloomValue = document.querySelector("#bloomValue");
+    const scrollTest = document.querySelector("#scroll-test");
+    const scrollFill = document.querySelector("#scrollFill");
+    const scrollValue = document.querySelector("#scrollValue");
+    const replayButton = document.querySelector("#replay");
+
+    controls.addEventListener("input", () => {
+      mainBurn.setAttribute("movement-x", movement.value);
+      mainBurn.setAttribute("noise-intensity", noise.value);
+      mainBurn.setAttribute("edge-softness", edge.value);
+      mainBurn.setAttribute("bloom", bloom.value);
+      mainBurn.setAttribute("transition-color", ember.value);
+      noiseValue.textContent = Number(noise.value).toFixed(2);
+      edgeValue.textContent = Number(edge.value).toFixed(2);
+      bloomValue.textContent = Number(bloom.value).toFixed(2);
+    });
+
+    function updateScrollTransition() {
+      const rect = scrollTest.getBoundingClientRect();
+      const travel = Math.max(1, scrollTest.offsetHeight - window.innerHeight);
+      const progress = clamp(-rect.top / travel, 0, 1);
+      const shaderProgress = -0.16 + progress * 1.28;
+      mainBurn.setAttribute("progress", shaderProgress.toFixed(4));
+      scrollFill.style.width = `${Math.round(progress * 100)}%`;
+      scrollValue.textContent = `${Math.round(progress * 100)}%`;
+    }
+
+    window.addEventListener("scroll", updateScrollTransition, { passive: true });
+    window.addEventListener("resize", updateScrollTransition);
+    replayButton.addEventListener("click", () => {
+      window.scrollTo({ top: scrollTest.offsetTop, behavior: "smooth" });
+    });
+    updateScrollTransition();
+  </script>
+</body>
+</html>
