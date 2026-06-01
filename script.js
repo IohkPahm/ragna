@@ -723,6 +723,55 @@
 
         const scrollPctEl = document.querySelector('.scroll-percentage');
 
+        // ── Liquid Glass fill — backdrop-filter bên trong từng chữ cái ──
+        const SVG_NS = 'http://www.w3.org/2000/svg';
+        const XHTML_NS = 'http://www.w3.org/1999/xhtml';
+
+        function createLetterGlassFill(path, clipId, panelClass) {
+            const svg = document.getElementById('under-text-svg');
+            const defs = svg.querySelector('defs');
+            const letterG = path.parentElement;
+            const pad = 6;
+
+            const clip = document.createElementNS(SVG_NS, 'clipPath');
+            clip.id = clipId;
+            clip.setAttribute('clipPathUnits', 'userSpaceOnUse');
+            const clipPath = path.cloneNode(true);
+            clipPath.removeAttribute('class');
+            clipPath.removeAttribute('stroke');
+            clipPath.removeAttribute('stroke-width');
+            clipPath.setAttribute('fill', 'white');
+            clip.appendChild(clipPath);
+            defs.appendChild(clip);
+
+            const bbox = path.getBBox();
+            const fo = document.createElementNS(SVG_NS, 'foreignObject');
+            fo.setAttribute('class', 'glass-letter-fill');
+            fo.setAttribute('x', String(bbox.x - pad));
+            fo.setAttribute('y', String(bbox.y - pad));
+            fo.setAttribute('width', String(bbox.width + pad * 2));
+            fo.setAttribute('height', String(bbox.height + pad * 2));
+            fo.setAttribute('clip-path', `url(#${clipId})`);
+
+            const div = document.createElementNS(XHTML_NS, 'div');
+            div.setAttribute('xmlns', XHTML_NS);
+            div.className = `glass-fill-panel ${panelClass}`;
+            fo.appendChild(div);
+
+            letterG.insertBefore(fo, path);
+            return fo;
+        }
+
+        const beyondGlassFills = [];
+        document.querySelectorAll('.beyond-stroke').forEach((path, i) => {
+            beyondGlassFills.push(createLetterGlassFill(path, `clip-beyond-${i}`, 'glass-fill-beyond'));
+        });
+
+        const ultraGlassFills = [];
+        document.querySelectorAll('.ultra-stroke').forEach((path, i) => {
+            ultraGlassFills.push(createLetterGlassFill(path, `clip-ultra-${i}`, 'glass-fill-ultra'));
+        });
+
         // Khởi tạo các mốc stroke-dashoffset cho hiệu ứng Path Reveal vẽ từng chữ cái
         const beyondStrokes = document.querySelectorAll('.beyond-stroke');
         const ultraStrokes = document.querySelectorAll('.ultra-stroke');
@@ -912,7 +961,9 @@
         const overlap_beyond = 0.8 * D_beyond; // 2.24
         beyondStrokes.forEach((stroke, i) => {
             const start = 105 + i * overlap_beyond;
+            const glass = beyondGlassFills[i];
             tl.set(stroke, { opacity: 1 }, start)
+              .fromTo(glass, { opacity: 0 }, { opacity: 1, duration: D_beyond * 0.55, ease: 'power2.out' }, start)
               .to(stroke, {
                   strokeDashoffset: 0,
                   duration: D_beyond,
@@ -926,7 +977,9 @@
         const ultraStartBase = 126.38; // 123.48 + 2.9
         ultraStrokes.forEach((stroke, i) => {
             const start = ultraStartBase + i * overlap_ultra;
+            const glass = ultraGlassFills[i];
             tl.set(stroke, { opacity: 1 }, start)
+              .fromTo(glass, { opacity: 0 }, { opacity: 1, duration: D_ultra * 0.55, ease: 'power2.out' }, start)
               .to(stroke, {
                   strokeDashoffset: 0,
                   duration: D_ultra,

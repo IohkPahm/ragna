@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Char D&D</title>
-    <link rel="stylesheet" href="style.css?v=2.9">
+    <link rel="stylesheet" href="style.css?v=3.2">
 </head>
 <body>
 
@@ -102,27 +102,14 @@
 
             <!-- Lớp Text Under (hiển thị khi ở mốc cuối cùng, ban đầu ẩn) -->
             <div class="under-text-layer">
-                <style>
-                    /* Performance optimizations */
-                    #group-beyond,
-                    #group-ultra {
-                        will-change: transform;
-                    }
-
-                    /* Stroke styling */
-                    .beyond-stroke,
-                    .ultra-stroke {
-                        stroke-width: 1px !important;
-                        filter: drop-shadow(0px 0px 4px rgba(255, 255, 255, 0.6));
-                    }
-                </style>
                 <svg id="under-text-svg" viewBox="0 0 1672 941" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-                    <defs>
-                    </defs>
+                    <defs></defs>
 
                     <!-- GO BEYOND -->
-                    <g id="group-beyond" transform="translate(-126.88, -83.35) scale(1.1236)">
-                        <!-- Strokes Group -->
+                    <g id="group-beyond" class="glass-logo-text" transform="translate(-126.88, -83.35) scale(1.1236)">
+                        <g class="glass-logo-float">
+                            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -3; 0 0" dur="4s" repeatCount="indefinite"/>
+                        <!-- Strokes Group (glass fill injected per letter by script.js) -->
                         <g id="beyond-strokes-group">
                             <!-- Letter 0 stroke -->
                             <g transform="translate(-86.4, 0)">
@@ -157,9 +144,12 @@
                                 <path class="beyond-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M1417.24 259.00C1418.03 253.47 1418.43 248.34 1418.43 243.60C1418.43 215.16 1401.44 195.81 1363.92 195.81L1300.72 195.81L1257.27 472.31L1320.47 472.31C1357.20 472.31 1386.83 451.76 1393.54 408.71ZM1359.57 250.31L1333.11 417.40C1331.92 423.32 1330.74 424.90 1327.97 424.90L1324.02 424.90L1352.46 243.20L1356.41 243.20C1359.57 243.20 1359.57 244.78 1359.57 247.55L1359.57 250.31Z" />
                             </g>
                         </g>
+                        </g>
                     </g>
                     <!-- PLUS ULTRA -->
-                    <g id="group-ultra" transform="translate(-183.06, -164.04) scale(1.2054)">
+                    <g id="group-ultra" class="glass-logo-text glass-logo-ultra" transform="translate(-183.06, -164.04) scale(1.2054)">
+                        <g class="glass-logo-float">
+                            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -3; 0 0" dur="4.5s" repeatCount="indefinite"/>
                         <!-- Strokes Group -->
                         <g id="ultra-strokes-group">
                             <!-- Letter 0 stroke -->
@@ -199,6 +189,7 @@
                                 <path class="ultra-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M1336.20 732.34L1346.14 672.33L1351.66 645.81L1353.87 645.81L1350.56 672.33L1341.72 732.34ZM1335.10 776.53L1327.36 829.91L1382.59 829.91L1400.63 572.17L1327.73 572.17L1264.77 829.91L1320.00 829.91L1328.84 776.53Z" />
                             </g>
                         </g>
+                        </g>
                     </g>
                 </svg>
             </div>
@@ -219,7 +210,7 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 
-    <script src="script.js?v=2.4"></script>
+    <script src="script.js?v=2.5"></script>
 
 </body>
 </html>
