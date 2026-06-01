@@ -30,14 +30,12 @@
             console.log("[DEBUG]", message);
         }
 
-        function prepareTextRevealAndMagnetic(selector, isReveal) {
+        function prepareTextReveal(selector) {
             const el = document.querySelector(selector);
             if (!el) return;
             const html = el.innerHTML;
             const lines = html.split(/<br\s*\/?>/i);
             let resultHTML = '';
-            
-            let globalCharIndex = 0;
             
             lines.forEach((line, lineIdx) => {
                 const words = line.trim().split(/\s+/);
@@ -45,22 +43,12 @@
                     if (word.length > 0) {
                         let wordHTML = '';
                         for (let ch of word) {
-                            wordHTML += `<span class="magnetic-char" data-index="${globalCharIndex}">${ch}</span>`;
-                            globalCharIndex++;
+                            wordHTML += `<span>${ch}</span>`;
                         }
-                        
-                        if (isReveal) {
-                            resultHTML += `<span class="reveal-word">${wordHTML}</span>`;
-                        } else {
-                            resultHTML += wordHTML;
-                        }
+                        resultHTML += `<span class="reveal-word">${wordHTML}</span>`;
                         
                         if (wordIdx < words.length - 1) {
-                            if (isReveal) {
-                                resultHTML += ' ';
-                            } else {
-                                resultHTML += `<span class="magnetic-space">&nbsp;</span>`;
-                            }
+                            resultHTML += ' ';
                         }
                     }
                 });
@@ -69,251 +57,194 @@
                 }
             });
             el.innerHTML = resultHTML;
-            return globalCharIndex;
         }
 
-        class MagneticFieldManager {
-            constructor() {
-                this.container = document.querySelector('.scroll-container');
-                if (!this.container) return;
-                
-                this.mouse = { x: -9999, y: -9999, active: false };
-                this.chars = [];
-                this.cacheInvalidated = true;
-                this.time = 0;
-                this.lastTs = null;
-                
-                // Theme colors: white text that wakes to cyan/blue (synergy with Ragna's blue eyes)
-                this.textColor = 'rgba(255, 255, 255, 0.85)';
-                this.wakeColorA = '#00e5ff'; // Electric cyan
-                this.wakeColorB = '#0055ff'; // Deep blue
-                
+        class GhostText {
+            constructor(elementOrSelector, options = {}) {
+                this.el = typeof elementOrSelector === 'string' ? document.querySelector(elementOrSelector) : elementOrSelector;
+                if (!this.el) return;
+
+                this.originalText = options.text || this.el.innerText.trim();
+                this.glitchSpeed = options.glitchSpeed !== undefined ? options.glitchSpeed : 50;
+                this.blockCharSet = options.blockCharSet || 'default';
+                this.enableGlow = options.enableGlow !== undefined ? options.enableGlow : true;
+                this.glowIntensity = options.glowIntensity !== undefined ? options.glowIntensity : 1;
+                this.glowColor = options.glowColor || '#ffffff';
+                this.textColor = options.textColor || '';
+                this.hoverTextColor = options.hoverTextColor || '#ffffff';
+
+                this.charSets = {
+                    default: ["■","▇","▆","▅","▄","▃","▂","▁","▉","▊","▋","▌","▍","▎","▏"],
+                    binary: ["0","1","0","1","0","1"],
+                    matrix: ["0","1","2","3","4","5","6","7","8","9"],
+                    symbols: ["#","$","%","&","*","@","!","?","\xa7"],
+                    blocks: ["█","▓","▒","░","█","▓","▒","░"],
+                    numbers: ["1","2","3","4","5","6","7","8","9","0"],
+                    custom: ["●","○","◆","◇","▲","△","■","□"]
+                };
+
+                this.activeBlockChars = this.charSets[this.blockCharSet] || this.charSets.default;
+                this.animationTimeout = null;
+                this.isAnimating = false;
+
                 this.init();
             }
-            
-            init() {
-                // Prepare all texts
-                prepareTextRevealAndMagnetic('.title-ragna', false);
-                prepareTextRevealAndMagnetic('.subtitle-hope', false);
-                prepareTextRevealAndMagnetic('.left-text-block', true);
-                prepareTextRevealAndMagnetic('.right-text-block', true);
-                
-                // Setup mouse event listeners on scroll-container
-                this.container.addEventListener('mousemove', (e) => {
-                    const rect = this.container.getBoundingClientRect();
-                    this.mouse.x = e.clientX - rect.left;
-                    this.mouse.y = e.clientY - rect.top;
-                    this.mouse.active = true;
-                });
-                
-                this.container.addEventListener('mouseleave', () => {
-                    this.mouse.active = false;
-                });
-                
-                // Invalidate cache on resize or scroll
-                const invalidate = () => { this.cacheInvalidated = true; };
-                window.addEventListener('resize', invalidate);
-                window.addEventListener('scroll', invalidate, true);
-                
-                // Collect elements
-                const els = document.querySelectorAll('.magnetic-char');
-                els.forEach((el, idx) => {
-                    let radius = 110;
-                    let strength = 15;
-                    let rotation = 4;
-                    let isIdleEnabled = true;
-                    
-                    if (el.closest('.title-ragna')) {
-                        radius = 200;
-                        strength = 45;
-                        rotation = 8;
-                    } else if (el.closest('.subtitle-hope')) {
-                        radius = 150;
-                        strength = 25;
-                        rotation = 6;
-                    } else if (el.closest('.left-text-block') || el.closest('.right-text-block')) {
-                        isIdleEnabled = false; // Tắt thở để tránh repainting liên tục cho 350+ chữ nhỏ
-                    }
-                    
-                    this.chars.push({
-                        el: el,
-                        cx: 0,
-                        cy: 0,
-                        dx: 0,
-                        dy: 0,
-                        rotate: 0,
-                        scale: 1,
-                        wake: 0,
-                        radius: radius,
-                        strength: strength,
-                        rotation: rotation,
-                        index: idx,
-                        isIdleEnabled: isIdleEnabled,
-                        lastTransform: '',
-                        lastColor: '',
-                        lastShadow: ''
-                    });
-                });
-            }
-            
 
-            
-            rebuildCache() {
-                const containerRect = this.container.getBoundingClientRect();
-                this.chars.forEach(char => {
-                    const r = char.el.getBoundingClientRect();
-                    char.cx = r.left - containerRect.left + r.width / 2;
-                    char.cy = r.top - containerRect.top + r.height / 2;
-                });
-                this.cacheInvalidated = false;
-            }
-            
-            parseColor(color) {
-                const hexMatch = color.match(/^#([0-9a-f]{3,8})$/i);
-                if (hexMatch) {
-                    let hex = hexMatch[1];
-                    if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-                    return {
-                        r: parseInt(hex.substring(0,2), 16),
-                        g: parseInt(hex.substring(2,4), 16),
-                        b: parseInt(hex.substring(4,6), 16)
-                    };
+            init() {
+                const chars = this.originalText.split("");
+                const spanHTML = chars.map((char, index) => {
+                    const isRagnaDeco = this.el.classList.contains('title-ragna') && (index === 0 || index === chars.length - 1);
+                    const cls = isRagnaDeco ? 'class="deco-letter"' : '';
+                    return `<span ${cls} style="display: inline-block;">${char}</span>`;
+                }).join("");
+
+                this.el.innerHTML = `<span class="ghost-text-inner" style="display: inline-block; white-space: pre; overflow: visible; transition: color 0.3s ease, text-shadow 0.3s ease;">${spanHTML}</span>`;
+                this.innerSpan = this.el.querySelector('.ghost-text-inner');
+                this.charSpans = Array.from(this.innerSpan.children);
+
+                if (this.textColor) {
+                    this.innerSpan.style.color = this.textColor;
                 }
-                const rgbMatch = color.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
-                if (rgbMatch) {
-                    return {
-                        r: parseInt(rgbMatch[1]),
-                        g: parseInt(rgbMatch[2]),
-                        b: parseInt(rgbMatch[3])
-                    };
-                }
-                return { r: 255, g: 255, b: 255 };
+
+                this.el.addEventListener('mouseenter', () => this.startDigitalHover());
+                this.el.addEventListener('mouseleave', () => this.resetDigitalHover());
             }
-            
-            lerpColor(colorA, colorB, t) {
-                const a = this.parseColor(colorA);
-                const b = this.parseColor(colorB);
-                const clamped = Math.max(0, Math.min(1, t));
-                const r = Math.round(a.r + (b.r - a.r) * clamped);
-                const g = Math.round(a.g + (b.g - a.g) * clamped);
-                const bl = Math.round(a.b + (b.b - a.b) * clamped);
-                return `rgb(${r}, ${g}, ${bl})`;
+
+            randomBlockChar() {
+                return this.activeBlockChars[Math.floor(Math.random() * this.activeBlockChars.length)];
             }
-            
-            animate(ts) {
-                
-                if (this.lastTs === null) this.lastTs = ts;
-                const dt = (ts - this.lastTs) / 1000;
-                this.lastTs = ts;
-                this.time += dt;
-                
-                if (this.cacheInvalidated) {
-                    this.rebuildCache();
+
+            isSkippableChar(char) {
+                return char === " " || /[.,!?;:'"()[\]{}\-_/]/.test(char);
+            }
+
+            buildGlitchText(textToGlitch, revealCount) {
+                return textToGlitch.split("").map((char, index) => {
+                    if (this.isSkippableChar(char)) return char;
+                    if (index < revealCount) return char;
+                    return this.randomBlockChar();
+                }).join("");
+            }
+
+            lockSize() {
+                if (this.innerSpan) {
+                    const rect = this.innerSpan.getBoundingClientRect();
+                    this.innerSpan.style.width = `${Math.ceil(rect.width)}px`;
+                    this.innerSpan.style.height = `${Math.ceil(rect.height)}px`;
                 }
+            }
+
+            unlockSize() {
+                if (this.innerSpan) {
+                    this.innerSpan.style.width = "";
+                    this.innerSpan.style.height = "";
+                }
+            }
+
+            getGlowEffect() {
+                if (!this.enableGlow) return "none";
+                const intensityMap = {
+                    0: "none",
+                    1: `0 0 8px ${this.glowColor}, 0 0 18px ${this.glowColor}, 0 0 36px ${this.glowColor}`,
+                    2: `0 0 10px ${this.glowColor}, 0 0 22px ${this.glowColor}, 0 0 45px ${this.glowColor}`,
+                    3: `0 0 12px ${this.glowColor}, 0 0 28px ${this.glowColor}, 0 0 55px ${this.glowColor}`,
+                    4: `0 0 15px ${this.glowColor}, 0 0 35px ${this.glowColor}, 0 0 70px ${this.glowColor}`,
+                    5: `0 0 20px ${this.glowColor}, 0 0 45px ${this.glowColor}, 0 0 90px ${this.glowColor}`
+                };
+                return intensityMap[this.glowIntensity] || intensityMap[1];
+            }
+
+            startDigitalHover() {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+
+                if (this.innerSpan) {
+                    this.innerSpan.style.color = this.hoverTextColor;
+                    this.innerSpan.style.textShadow = this.getGlowEffect();
+                }
+
+                this.lockSize();
+
+                const textChars = this.originalText.split("");
+                const revealableCharsCount = textChars.filter(char => !this.isSkippableChar(char)).length;
+                const holdSteps = 2;
+                const endHoldSteps = 1;
+                const totalSteps = holdSteps + revealableCharsCount + endHoldSteps;
                 
-                const totalChars = this.chars.length;
-                
-                this.chars.forEach(char => {
-                    let target = { dx: 0, dy: 0, rotate: 0, scale: 1, proximity: 0 };
-                    
-                    if (this.mouse.active) {
-                        const distX = char.cx - this.mouse.x;
-                        const distY = char.cy - this.mouse.y;
-                        const dist = Math.sqrt(distX * distX + distY * distY);
-                        
-                        if (dist < char.radius && dist > 0.01) {
-                            const normalizedDist = dist / char.radius;
-                            const falloff = 1 - normalizedDist * normalizedDist * normalizedDist;
-                            target.proximity = falloff;
-                            
-                            const dirX = distX / dist;
-                            const dirY = distY / dist;
-                            
-                            // Repel mode
-                            const force = falloff * char.strength;
-                            target.dx = dirX * force;
-                            target.dy = dirY * force;
-                            target.rotate = dirX * falloff * char.rotation * 0.5;
-                            target.scale = 1 + falloff * 0.08;
+                let step = 0;
+
+                const animate = () => {
+                    const revealCount = Math.max(0, step - holdSteps);
+                    if (this.charSpans && this.charSpans.length > 0) {
+                        this.charSpans.forEach((span, index) => {
+                            const char = textChars[index];
+                            if (this.isSkippableChar(char)) {
+                                span.textContent = char;
+                            } else if (index < revealCount) {
+                                span.textContent = char;
+                            } else {
+                                span.textContent = this.randomBlockChar();
+                            }
+                        });
+                    }
+                    step++;
+                    if (step <= totalSteps) {
+                        this.animationTimeout = setTimeout(animate, this.glitchSpeed);
+                    } else {
+                        if (this.charSpans && this.charSpans.length > 0) {
+                            this.charSpans.forEach((span, index) => {
+                                span.textContent = textChars[index];
+                            });
                         }
+                        this.isAnimating = false;
+                        this.unlockSize();
                     }
-                    
-                    let idleY = 0;
-                    let idleScale = 1;
-                    const isIdle = target.proximity < 0.05;
-                    
-                    if (isIdle && char.isIdleEnabled) {
-                        const normalizedIndex = totalChars > 1 ? char.index / (totalChars - 1) : 0.5;
-                        const wave1 = Math.sin(this.time * 0.8 + normalizedIndex * Math.PI * 2.5) * 0.55;
-                        const wave2 = Math.sin(this.time * 1.4 + normalizedIndex * Math.PI * 4 + 1.5) * 0.25;
-                        const wave3 = Math.sin(this.time * 0.45 + char.index * 0.3 + 2.8) * 0.2;
-                        const combined = wave1 + wave2 + wave3;
-                        idleY = combined * 3;
-                        idleScale = 1 + combined * 0.012;
-                    }
-                    
-                    const elasticity = 0.12;
-                    const lerpRate = isIdle ? Math.min(0.25, elasticity * 3) : elasticity;
-                    
-                    const targetDx = target.dx;
-                    const targetDy = target.dy + idleY;
-                    const targetRotate = target.rotate;
-                    const targetScale = target.proximity > 0.05 ? target.scale : idleScale;
-                    
-                    char.dx += (targetDx - char.dx) * lerpRate;
-                    char.dy += (targetDy - char.dy) * lerpRate;
-                    char.rotate += (targetRotate - char.rotate) * lerpRate;
-                    char.scale += (targetScale - char.scale) * lerpRate;
-                    
-                    const wakeDecay = 0.92;
-                    const targetWake = target.proximity * 0.8;
-                    char.wake = Math.max(char.wake * wakeDecay, targetWake);
-                    
-                    let color = this.textColor;
-                    let textShadow = 'none';
-                    
-                    if (char.wake > 0.02) {
-                        const wakeProgress = Math.min(1, char.wake);
-                        const midColor = this.lerpColor(this.textColor, this.wakeColorA, wakeProgress * 0.9);
-                        color = this.lerpColor(midColor, this.wakeColorB, wakeProgress * 0.4);
-                    }
-                    
-                    if (char.wake > 0.05) {
-                        const glowSize = char.wake * 10;
-                        const glowOpacity = char.wake * 0.5;
-                        textShadow = `0 0 ${glowSize}px ${this.wakeColorA}${Math.round(glowOpacity * 255).toString(16).padStart(2, '0')}, 0 0 ${glowSize * 2}px ${this.wakeColorB}${Math.round(glowOpacity * 100).toString(16).padStart(2, '0')}`;
-                    }
-                    
-                    // Tối ưu hóa: Chỉ cập nhật DOM nếu có thay đổi thực sự (Dirty checking)
-                    const transformStr = `translate(${char.dx.toFixed(2)}px, ${char.dy.toFixed(2)}px) rotate(${char.rotate.toFixed(1)}deg) scale(${char.scale.toFixed(3)})`;
-                    
-                    if (char.lastTransform !== transformStr) {
-                        char.el.style.transform = transformStr;
-                        char.lastTransform = transformStr;
-                    }
-                    if (char.lastColor !== color) {
-                        char.el.style.color = color;
-                        char.lastColor = color;
-                    }
-                    if (char.lastShadow !== textShadow) {
-                        char.el.style.textShadow = textShadow;
-                        char.lastShadow = textShadow;
-                    }
-                });
-                
-                if (this.isActive) {
-                    requestAnimationFrame((ts) => this.animate(ts));
+                };
+
+                if (this.animationTimeout) clearTimeout(this.animationTimeout);
+                animate();
+            }
+
+            resetDigitalHover() {
+                if (this.animationTimeout) {
+                    clearTimeout(this.animationTimeout);
+                    this.animationTimeout = null;
                 }
+                if (this.innerSpan) {
+                    const textChars = this.originalText.split("");
+                    if (this.charSpans && this.charSpans.length > 0) {
+                        this.charSpans.forEach((span, index) => {
+                            span.textContent = textChars[index];
+                        });
+                    }
+                    this.innerSpan.style.color = this.textColor || '';
+                    this.innerSpan.style.textShadow = 'none';
+                }
+                this.isAnimating = false;
+                this.unlockSize();
             }
         }
 
-        // Khởi tạo Magnetic Field Manager ngay lập tức để tạo thẻ spans trước khi GSAP khởi chạy
-        window.magneticManager = new MagneticFieldManager();
+        // Khởi tạo các hiệu ứng text
+        prepareTextReveal('.left-text-block');
+        prepareTextReveal('.right-text-block');
+
+        window.ghostTextRagna = new GhostText('.title-ragna', {
+            hoverTextColor: '#ffffff',
+            glowColor: '#00e5ff',
+            glowIntensity: 2
+        });
+
+        window.ghostTextHope = new GhostText('.subtitle-hope', {
+            hoverTextColor: '#ffffff',
+            glowColor: '#00e5ff',
+            glowIntensity: 1
+        });
 
         // ═══════════════════════════════════════
         // LENIS SMOOTH SCROLLING INITIALIZATION
         // ═══════════════════════════════════════
-        const lenis = new Lenis({
+        const lenis = window.lenis = new Lenis({
             duration: 1.4, // Thời gian trượt (giây) - tăng nhẹ để cuộn siêu êm
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutExpo
             smoothWheel: true,
@@ -758,7 +689,7 @@
         }
 
         logDebug("Đang bắt đầu tải ảnh...");
-        loadImages(['assets/images/background.webp', 'assets/images/character-ragna.webp'])
+        loadImages(['assets/images/background.webp', 'assets/images/character-ragna.svg'])
             .then(([bgImg, charImg]) => {
                 logDebug("Đã tải xong toàn bộ ảnh!");
                 logDebug(`bgImg: ${bgImg.width}x${bgImg.height}`);
@@ -792,16 +723,30 @@
 
         const scrollPctEl = document.querySelector('.scroll-percentage');
 
+        // Khởi tạo các mốc stroke-dashoffset cho hiệu ứng Path Reveal vẽ từng chữ cái
+        const beyondStrokes = document.querySelectorAll('.beyond-stroke');
+        const ultraStrokes = document.querySelectorAll('.ultra-stroke');
+
+        beyondStrokes.forEach(path => {
+            const len = path.getTotalLength();
+            gsap.set(path, { strokeDasharray: len, strokeDashoffset: len, opacity: 0 });
+        });
+
+        ultraStrokes.forEach(path => {
+            const len = path.getTotalLength();
+            gsap.set(path, { strokeDasharray: len, strokeDashoffset: len, opacity: 0 });
+        });
+
         const tl = gsap.timeline({
             scrollTrigger: {
                 trigger: '.animation-wrapper',
                 start: 'top top',
-                end: '+=1500%', // Tăng quãng đường cuộn lên 1500% để làm chậm hoạt ảnh
+                end: '+=2250%', // Tăng thêm 750% cho phần sau INTRO (tổng cộng 150% scroll)
                 pin: true,
                 scrub: true, // Trỏ 1:1 theo thanh cuộn (đã được làm mượt bởi Lenis)
                 anticipatePin: 1,
                 onUpdate: self => {
-                    const pct = Math.round(self.progress * 100);
+                    const pct = Math.round(self.progress * 150);
                     if (scrollPctEl) {
                         scrollPctEl.textContent = String(pct).padStart(2, '0') + '%';
                     }
@@ -955,4 +900,42 @@
               opacity: 0,
               duration: 10,
               ease: 'power2.out'
-          }, 'burn');
+          }, 'burn')
+          .to('.under-text-layer', {
+              opacity: 1,
+              duration: 1,
+              ease: 'none'
+          }, 105);
+
+        // Hiển thị GO BEYOND vẽ viền từng chữ cái tuần tự, chữ sau bắt đầu khi chữ trước vẽ được 80%
+        const D_beyond = 2.8;
+        const overlap_beyond = 0.8 * D_beyond; // 2.24
+        beyondStrokes.forEach((stroke, i) => {
+            const start = 105 + i * overlap_beyond;
+            tl.set(stroke, { opacity: 1 }, start)
+              .to(stroke, {
+                  strokeDashoffset: 0,
+                  duration: D_beyond,
+                  ease: 'power1.inOut'
+              }, start);
+        });
+
+        // Hiển thị PLUS ULTRA vẽ viền từng chữ cái tuần tự sau khi GO BEYOND đã hiện hoàn chỉnh (tại mốc 126.38)
+        const D_ultra = 2.8;
+        const overlap_ultra = 0.8 * D_ultra; // 2.24
+        const ultraStartBase = 126.38; // 123.48 + 2.9
+        ultraStrokes.forEach((stroke, i) => {
+            const start = ultraStartBase + i * overlap_ultra;
+            tl.set(stroke, { opacity: 1 }, start)
+              .to(stroke, {
+                  strokeDashoffset: 0,
+                  duration: D_ultra,
+                  ease: 'power1.inOut'
+              }, start);
+        });
+
+        // Giữ ảnh nhân vật under-char luôn hiện với opacity 1 từ mốc 101% đến 150%
+        tl.set('.under-char-layer', {
+            opacity: 1
+        }, 101)
+          .to({}, { duration: 0.1 }, 150);

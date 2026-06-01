@@ -27,6 +27,18 @@
             font-style: normal;
         }
         @font-face {
+            font-family: 'CinzelDecorative';
+            src: url('fonts/CinzelDecorative-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'MaverickGrotesk';
+            src: url('fonts/MRCHMaverickGrotesk-BlackItalic-SVG.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
             font-family: 'Cinzel';
             src: url('fonts/Cinzel-Bold.ttf') format('truetype');
             font-weight: bold;
@@ -150,6 +162,11 @@
             color: rgba(255, 255, 255, 0.9);
             z-index: 1;
             opacity: 0;
+            pointer-events: auto;
+        }
+
+        .deco-letter {
+            font-family: 'CinzelDecorative', serif;
         }
 
         .header-line {
@@ -194,6 +211,7 @@
             text-align: left;
             z-index: 3;
             opacity: 0;
+            pointer-events: auto;
         }
 
         .left-text-block {
@@ -325,4 +343,91 @@
 
         .lenis-scrolling iframe {
             pointer-events: none;
+        }
+
+        /* ═══════════════════════════════════
+           UNDER TEXT LAYER
+           ═══════════════════════════════════ */
+        .under-text-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 6;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .beyond-text {
+            position: absolute;
+            left: 8.5%;
+            right: 8.5%;
+            top: 24.5%;
+            height: 22%;
+            font-family: 'MaverickGrotesk', sans-serif;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .beyond-text span {
+            font-size: 23.626cqw;
+            letter-spacing: 0.08em;
+            line-height: 1;
+        }
+
+        .ultra-text {
+            position: absolute;
+            left: 8.5%;
+            right: 8.5%;
+            top: 63.5%;
+            height: 22%;
+            font-family: 'MaverickGrotesk', sans-serif;
+            color: #ff6f2a;
+            text-shadow: 0 0 35px rgba(255, 111, 42, 0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .ultra-text span {
+            font-size: 22.022cqw;
+            letter-spacing: 0.08em;
+            line-height: 1;
+        }
+
+        /* ═══════════════════════════════════
+           UNDER CHARACTER LAYER
+           ═══════════════════════════════════ */
+        .under-char-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 7;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .under-char-img {
+            position: absolute;
+            left: 36.961722%;
+            top: 18.278427%;
+            width: 24.401914%;
+            height: 81.721573%;
+            display: block;
+        }
+
+        #under-text-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Stroke glow and color for text outlines (completely transparent fill) */
+        .beyond-stroke,
+        .ultra-stroke {
+            stroke: rgba(255, 255, 255, 0.85) !important;
+            filter: drop-shadow(0px 0px 4px rgba(255, 255, 255, 0.6)) !important;
         }

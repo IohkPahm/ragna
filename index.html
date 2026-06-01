@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Char D&D</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.9">
 </head>
 <body>
 
@@ -40,7 +40,7 @@
 
             <!-- Lớp Hero Nhân vật (z-index: 4) -->
             <div class="hero-char-layer">
-                <img src="assets/images/character-ragna.webp" class="character-ragna" alt="Character Ragna">
+                <img src="assets/images/character-ragna.svg" class="character-ragna" alt="Character Ragna">
             </div>
 
             <!-- Burn Transition Overlay (z-index: 5) -->
@@ -100,6 +100,113 @@
                 </div>
             </div>
 
+            <!-- Lớp Text Under (hiển thị khi ở mốc cuối cùng, ban đầu ẩn) -->
+            <div class="under-text-layer">
+                <style>
+                    /* Performance optimizations */
+                    #group-beyond,
+                    #group-ultra {
+                        will-change: transform;
+                    }
+
+                    /* Stroke styling */
+                    .beyond-stroke,
+                    .ultra-stroke {
+                        stroke-width: 1px !important;
+                        filter: drop-shadow(0px 0px 4px rgba(255, 255, 255, 0.6));
+                    }
+                </style>
+                <svg id="under-text-svg" viewBox="0 0 1672 941" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                    </defs>
+
+                    <!-- GO BEYOND -->
+                    <g id="group-beyond" transform="translate(-126.88, -83.35) scale(1.1236)">
+                        <!-- Strokes Group -->
+                        <g id="beyond-strokes-group">
+                            <!-- Letter 0 stroke -->
+                            <g transform="translate(-86.4, 0)">
+                                <path class="beyond-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M391.82 244.39L382.74 300.48L441.99 300.48L449.49 253.08C450.68 247.16 451.07 242.02 451.07 236.88C451.07 209.63 433.30 189.88 396.56 189.88C359.83 189.88 330.60 209.24 323.09 253.08L297.81 414.63C296.23 424.90 295.44 433.99 295.44 441.50C295.44 450.19 297.02 458.48 300.18 466.38C302.95 474.28 310.85 478.23 323.09 478.23C344.03 478.23 359.04 463.62 361.80 445.05L363.38 445.05L362.99 472.31L415.13 472.31L438.04 326.55L375.63 326.55L368.12 373.95L373.26 373.95L365.36 423.32C364.96 429.25 361.80 430.83 359.04 430.83C356.27 430.83 355.48 428.46 355.48 425.30L355.48 423.32L383.92 244.39C385.11 239.25 386.29 237.28 389.06 237.28C391.82 237.28 392.22 239.25 392.22 240.84C392.22 242.02 392.22 243.20 391.82 244.39Z" />
+                            </g>
+                            <!-- Letter 1 stroke -->
+                            <g transform="translate(-61.7, 0)">
+                                <path class="beyond-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M584.19 253.08C584.98 247.55 585.37 242.41 585.37 237.67C585.37 210.81 570.76 189.88 531.65 189.88C492.15 189.88 464.50 212 457.79 253.08L432.51 414.63C431.72 420.17 431.32 425.30 431.32 430.04C431.32 456.90 446.33 478.23 485.44 478.23C524.54 478.23 552.19 456.11 558.91 414.63ZM526.52 244.39L498.08 423.32C497.68 429.25 495.71 430.83 492.94 430.83C490.18 430.83 490.18 428.86 490.18 426.09L490.18 423.32L518.62 244.39C519.80 239.25 520.99 237.28 523.75 237.28C526.52 237.28 526.91 239.25 526.91 240.84C526.91 242.02 526.91 243.20 526.52 244.39Z" />
+                            </g>
+                            <!-- Letter 2 stroke -->
+                            <g transform="translate(-37.0, 0)">
+                                <path class="beyond-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M781.29 259.00C782.08 253.47 782.48 248.34 782.48 243.60C782.48 215.16 765.49 195.81 727.97 195.81L664.77 195.81L621.32 472.31L684.52 472.31C721.25 472.31 750.88 451.76 757.59 408.71L762.73 377.50C763.12 373.56 763.52 370 763.52 366.44C763.52 352.23 758.78 336.43 739.82 330.50L740.21 328.92C760.36 322.60 774.18 306.01 777.74 282.31ZM723.62 250.31L715.72 298.90C714.54 304.03 713.75 306.40 710.59 306.40L706.64 306.40L716.51 243.20L720.46 243.20C723.62 243.20 723.62 244.78 723.62 247.55L723.62 250.31ZM705.85 360.92L697.16 417.40C695.97 423.32 694.79 424.90 692.02 424.90L688.07 424.90L699.13 353.81L703.08 353.81C705.85 353.81 706.24 355.78 706.24 357.36C706.24 358.55 706.24 359.73 705.85 360.92Z" />
+                            </g>
+                            <!-- Letter 3 stroke -->
+                            <g transform="translate(-12.3, 0)">
+                                <path class="beyond-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M888.73 195.81L797.49 195.81L754.04 472.31L848.84 472.31L856.34 424.90L820.79 424.90L831.06 358.15L860.69 358.15L868.19 310.75L838.57 310.75L849.23 243.20L881.23 243.20Z" />
+                            </g>
+                            <!-- Letter 4 stroke -->
+                            <g transform="translate(12.3, 0)">
+                                <path class="beyond-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M1021.06 195.81L961.81 195.81L942.45 309.96L936.53 338.40L934.16 338.40L953.91 195.81L894.66 195.81L897.03 393.31L884.78 472.31L944.03 472.31L956.28 393.31Z" />
+                            </g>
+                            <!-- Letter 5 stroke -->
+                            <g transform="translate(37.0, 0)">
+                                <path class="beyond-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M1136.79 253.08C1137.58 247.55 1137.98 242.41 1137.98 237.67C1137.98 210.81 1123.36 189.88 1084.26 189.88C1044.76 189.88 1017.11 212 1010.39 253.08L985.11 414.63C984.32 420.17 983.93 425.30 983.93 430.04C983.93 456.90 998.94 478.23 1038.04 478.23C1077.15 478.23 1104.80 456.11 1111.51 414.63ZM1079.12 244.39L1050.68 423.32C1050.29 429.25 1048.31 430.83 1045.55 430.83C1042.78 430.83 1042.78 428.86 1042.78 426.09L1042.78 423.32L1071.22 244.39C1072.41 239.25 1073.59 237.28 1076.36 237.28C1079.12 237.28 1079.52 239.25 1079.52 240.84C1079.52 242.02 1079.52 243.20 1079.12 244.39Z" />
+                            </g>
+                            <!-- Letter 6 stroke -->
+                            <g transform="translate(61.7, 0)">
+                                <path class="beyond-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M1292.42 195.81L1233.17 195.81L1222.51 369.61L1220.14 370L1220.14 341.56L1225.27 195.81L1154.17 195.81L1110.72 472.31L1169.97 472.31L1179.06 317.86L1181.43 289.42L1183.80 289.02L1183.80 317.47L1177.87 472.31L1248.97 472.31Z" />
+                            </g>
+                            <!-- Letter 7 stroke -->
+                            <g transform="translate(86.4, 0)">
+                                <path class="beyond-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M1417.24 259.00C1418.03 253.47 1418.43 248.34 1418.43 243.60C1418.43 215.16 1401.44 195.81 1363.92 195.81L1300.72 195.81L1257.27 472.31L1320.47 472.31C1357.20 472.31 1386.83 451.76 1393.54 408.71ZM1359.57 250.31L1333.11 417.40C1331.92 423.32 1330.74 424.90 1327.97 424.90L1324.02 424.90L1352.46 243.20L1356.41 243.20C1359.57 243.20 1359.57 244.78 1359.57 247.55L1359.57 250.31Z" />
+                            </g>
+                        </g>
+                    </g>
+                    <!-- PLUS ULTRA -->
+                    <g id="group-ultra" transform="translate(-183.06, -164.04) scale(1.2054)">
+                        <!-- Strokes Group -->
+                        <g id="ultra-strokes-group">
+                            <!-- Letter 0 stroke -->
+                            <g transform="translate(-52.0, 0)">
+                                <path class="ultra-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M442.21 634.77C442.95 629.61 443.31 624.83 443.31 620.04C443.31 593.53 427.85 572.17 392.87 572.17L333.96 572.17L293.46 829.91L348.69 829.91L361.94 745.23L365.62 745.23C400.60 745.23 428.22 723.14 434.48 682.27ZM388.82 622.99L377.41 694.05C376.30 699.57 375.20 701.04 372.62 701.04L368.94 701.04L382.19 616.36L385.88 616.36C388.82 616.36 388.82 617.83 388.82 620.41L388.82 622.99Z" />
+                            </g>
+                            <!-- Letter 1 stroke -->
+                            <g transform="translate(-39.0, 0)">
+                                <path class="ultra-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M459.52 572.17L419.01 829.91L503.70 829.91L510.70 785.73L481.24 785.73L514.75 572.17Z" />
+                            </g>
+                            <!-- Letter 2 stroke -->
+                            <g transform="translate(-26.0, 0)">
+                                <path class="ultra-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M670.13 572.17L614.90 572.17L581.02 784.26C580.65 789.78 579.18 791.25 576.23 791.25C573.66 791.25 573.66 789.41 573.66 786.84L573.66 784.26L607.53 572.17L552.30 572.17L519.90 776.16C519.16 780.94 518.80 785.73 518.80 790.15C518.80 816.66 535.36 835.44 569.24 835.44C604.22 835.44 631.46 816.29 637.72 776.16Z" />
+                            </g>
+                            <!-- Letter 3 stroke -->
+                            <g transform="translate(-13.0, 0)">
+                                <path class="ultra-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M781.69 658.70L786.85 625.56C787.58 620.41 787.95 615.62 787.95 611.20C787.95 586.53 774.33 566.65 737.51 566.65C701.05 566.65 675.28 586.90 669.02 625.56L665.71 648.02C664.97 652.44 664.60 656.49 664.60 660.54C664.60 666.43 665.34 675.27 669.76 685.58C674.18 695.89 680.44 704.73 687.43 712.46C701.05 728.29 711.36 743.39 711.36 754.43C711.36 755.54 711.36 756.64 711.00 757.75L706.58 784.26C706.21 789.78 704.37 791.25 701.79 791.25C699.21 791.25 699.21 789.78 699.21 787.20L699.21 784.26L705.84 743.02L650.61 743.02L645.46 776.16C644.72 781.31 644.35 786.10 644.35 790.52C644.35 815.56 658.34 835.44 694.80 835.44C731.25 835.44 757.02 814.82 763.28 776.16L766.59 754.43C767.33 750.02 767.70 745.60 767.70 741.55C767.70 734.55 766.59 724.24 761.07 712.83C755.18 701.41 747.45 692.21 740.08 683.74C728.67 670.48 721.31 659.44 721.31 649.13C721.31 647.29 721.31 645.81 721.67 643.97L725.72 617.46C726.83 612.68 727.93 610.84 730.88 610.84C733.46 610.84 733.46 612.68 733.46 614.15C733.46 614.89 733.46 615.99 733.09 617.46L726.46 658.70Z" />
+                            </g>
+                            <!-- Letter 4 stroke -->
+                            <g transform="translate(0.0, 0)">
+                                <path class="ultra-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M980.15 572.17L924.92 572.17L891.05 784.26C890.68 789.78 889.20 791.25 886.26 791.25C883.68 791.25 883.68 789.41 883.68 786.84L883.68 784.26L917.56 572.17L862.33 572.17L829.92 776.16C829.19 780.94 828.82 790.15 828.82 790.15C828.82 816.66 845.39 835.44 879.26 835.44C914.24 835.44 941.49 816.29 947.75 776.16Z" />
+                            </g>
+                            <!-- Letter 5 stroke -->
+                            <g transform="translate(13.0, 0)">
+                                <path class="ultra-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M987.51 572.17L947.01 829.91L1031.70 829.91L1038.69 785.73L1009.24 785.73L1042.74 572.17Z" />
+                            </g>
+                            <!-- Letter 6 stroke -->
+                            <g transform="translate(26.0, 0)">
+                                <path class="ultra-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M1175.66 572.17L1068.89 572.17L1061.89 616.36L1087.66 616.36L1054.16 829.91L1109.39 829.91L1142.89 616.36L1168.67 616.36Z" />
+                            </g>
+                            <!-- Letter 7 stroke -->
+                            <g transform="translate(39.0, 0)">
+                                <path class="ultra-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M1183.40 572.17L1142.89 829.91L1198.12 829.91L1213.59 730.50L1217.27 730.50C1220.22 730.50 1220.22 732.34 1220.22 733.81C1220.22 734.55 1220.22 735.66 1219.85 737.13L1211.01 794.20C1208.43 808.93 1208.43 815.92 1208.43 822.92L1208.43 829.91L1263.66 829.91L1263.66 828.07L1263.66 827.71L1263.66 827.34L1263.66 826.60L1263.66 826.60L1263.66 826.23L1263.66 825.86L1263.66 824.76L1263.66 824.39L1263.66 821.08L1263.66 820.71C1263.66 812.98 1264.77 805.25 1266.24 794.20L1272.87 752.59C1273.24 748.91 1273.61 745.60 1273.61 742.28C1273.61 729.03 1269.19 714.30 1251.88 708.78L1251.88 707.30C1270.66 701.41 1283.55 685.95 1286.86 663.86L1291.28 635.14C1292.38 629.61 1292.75 624.46 1292.75 619.67C1292.75 593.16 1277.29 572.17 1242.31 572.17ZM1231.63 616.36L1235.31 616.36C1238.26 616.36 1238.26 617.83 1238.26 620.41L1238.26 622.99L1229.05 679.32C1228.69 684.84 1227.21 686.32 1224.27 686.32L1220.58 686.32Z" />
+                            </g>
+                            <!-- Letter 8 stroke -->
+                            <g transform="translate(52.0, 0)">
+                                <path class="ultra-stroke" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M1336.20 732.34L1346.14 672.33L1351.66 645.81L1353.87 645.81L1350.56 672.33L1341.72 732.34ZM1335.10 776.53L1327.36 829.91L1382.59 829.91L1400.63 572.17L1327.73 572.17L1264.77 829.91L1320.00 829.91L1328.84 776.53Z" />
+                            </g>
+                        </g>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Lớp Character Under (đè lên trên chữ, z-index: 7, ban đầu ẩn) -->
+            <div class="under-char-layer">
+                <img src="assets/images/under-char.webp" class="under-char-img" alt="Under Character">
+            </div>
 
         </div>
     </div>
@@ -112,7 +219,7 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=2.4"></script>
 
 </body>
 </html>
