@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combat Sheet - Ragna | D&D 5e</title>
+    <meta name="description" content="Trang chiến đấu chuyên dụng D&D 5e dành cho Ragna. Theo dõi HP, tính sát thương đòn đánh và cast phép kỵ sĩ.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Pinyon+Script&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/character-sheet.css">
+</head>
+<body>
+
+    <!-- Nền tối kết hợp hình background có sẵn -->
+    <div class="page-background"></div>
+    <div class="page-background-overlay"></div>
+
+    <!-- Header Navigation -->
+    <header class="header">
+        <a href="index.html" class="logo" id="header-logo">LUMEN</a>
+        <nav class="nav-links">
+            <a href="index.html" id="nav-home">Trang chủ</a>
+            <a href="character-sheet.html" class="btn-combat-toggle in-combat" id="btn-combat-toggle">VIEW SHEET</a>
+        </nav>
+    </header>
+
+    <!-- Toàn bộ nội dung Combat Sheet -->
+    <main class="sheet-container" id="sheet-container">
+        
+        <!-- ==========================================
+             MÀN HÌNH CHIẾN ĐẤU CHUYÊN DỤNG (COMBAT MODE)
+             ========================================== -->
+        <section class="sheet-screen active" id="combat-screen">
+            <div class="combat-grid">
+                
+                <!-- Hàng 1: Thanh trạng thái Combat HP lớn và AC, Initiative -->
+                <div class="combat-top-status glass-panel" id="combat-hp-tracker">
+                    
+                    <div class="combat-ac-init-block">
+                        <div class="combat-badge rollable" id="roll-initiative-btn">
+                            <div class="badge-icon">⚔️</div>
+                            <div class="badge-value" id="combat-init-value">+2</div>
+                            <div class="badge-label">INITIATIVE</div>
+                        </div>
+                        <div class="combat-badge" id="combat-ac-box">
+                            <div class="badge-icon">🛡️</div>
+                            <div class="badge-value">19</div>
+                            <div class="badge-label">ARMOR CLASS</div>
+                        </div>
+                    </div>
+
+                    <div class="combat-hp-control">
+                        <div class="hp-tracker-header">
+                            <div class="hp-main-values">
+                                <span class="hp-current" id="combat-current-hp">54</span>
+                                <span class="hp-divider">/</span>
+                                <span class="hp-max">54</span>
+                                <span class="hp-temp-label" id="temp-hp-display" style="display:none;">(+<span id="combat-temp-hp">0</span> Temp)</span>
+                            </div>
+                            <div class="hp-label">SỨC KHỎE (HIT POINTS)</div>
+                        </div>
+                        
+                        <div class="hp-progress-wrapper">
+                            <div class="hp-progress-bar-bg">
+                                <div class="hp-progress-fill" id="combat-hp-bar-fill" style="width: 100%;"></div>
+                                <div class="hp-temp-fill" id="combat-temp-bar-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="hp-action-inputs">
+                            <input type="number" id="hp-input-value" class="hp-input" placeholder="Giá trị" min="1">
+                            <button class="btn-hp heal" id="btn-heal-hp" title="Hồi máu">HEAL (+)</button>
+                            <button class="btn-hp damage" id="btn-damage-hp" title="Sát thương">DAMAGE (-)</button>
+                            <button class="btn-hp temp" id="btn-temp-hp" title="Máu tạm thời">TEMP (+)</button>
+                        </div>
+
+                        <!-- Hàng cứu nạn (Saving Throws) di chuyển lên vị trí đắc địa dưới thanh máu -->
+                        <div class="combat-saves-row" id="combat-saves-row">
+                            <button class="btn-save-roll" data-save="STR" data-bonus="2" id="btn-save-str">STR Save (+2)</button>
+                            <button class="btn-save-roll" data-save="DEX" data-bonus="3" id="btn-save-dex">DEX Save (+3)</button>
+                            <button class="btn-save-roll" data-save="CON" data-bonus="4" id="btn-save-con">CON Save (+4)</button>
+                            <button class="btn-save-roll" data-save="INT" data-bonus="4" id="btn-save-int">INT Save (+4)</button>
+                            <button class="btn-save-roll" data-save="WIS" data-bonus="7" id="btn-save-wis">WIS Save (+7)</button>
+                            <button class="btn-save-roll" data-save="CHA" data-bonus="8" id="btn-save-cha">CHA Save (+8)</button>
+                        </div>
+                    </div>
+
+                    <div class="combat-rest-buttons">
+                        <button class="btn-rest" id="btn-short-rest">SHORT REST</button>
+                        <button class="btn-rest" id="btn-long-rest">LONG REST</button>
+                    </div>
+                </div>
+
+                <!-- Hàng 2: Bảng tính toán đòn đánh chính bên trái, Tài nguyên và Cứu nạn bên phải -->
+                <div class="combat-main-layout">
+                    
+                    <!-- KHOANG CHÍNH: BỘ TÍNH TOÁN HÀNH ĐỘNG & SÁT THƯƠNG (MAIN CALCULATOR) -->
+                    <div class="combat-calculator-panel glass-panel">
+                        <div class="calculator-header">
+                            <h2 class="panel-title">QUẢN LÝ LƯỢT ĐI & BỘ TÍNH SÁT THƯƠNG</h2>
+                            <button class="btn-reset-turn" id="btn-reset-turn">RESET LƯỢT ĐI</button>
+                        </div>
+
+                        <!-- 4 Hành động chính của lượt đi (khung to, nổi bật) -->
+                        <div class="turn-actions-container">
+                            <!-- ACTION -->
+                            <div class="turn-action-card active-action" id="action-card-container">
+                                <label class="action-card-header">
+                                    <input type="checkbox" id="chk-action" class="combat-chk-main" checked>
+                                    <span class="switch-box-main"></span>
+                                    <div class="action-header-text">
+                                        <span class="action-title-main">ACTION (HÀNH ĐỘNG CHÍNH)</span>
+                                        <span class="action-desc-main">Dùng để tấn công, cast phép... (Nhân vật của bạn đánh được 3 đòn)</span>
+                                    </div>
+                                </label>
+                                
+                                <!-- Bảng thiết lập các loại Action -->
+                                <div class="action-details-panel" id="action-details-panel">
+                                    
+                                    <!-- Lựa chọn loại Action (D&D 5e Actions) -->
+                                    <div class="action-type-select-block">
+                                        <span class="action-type-label">Loại Action:</span>
+                                        <div class="action-type-options">
+                                            <label class="action-type-btn" id="type-opt-attack">
+                                                <input type="radio" name="combat-action-type" value="attack">
+                                                <span>Attack (Tấn công)</span>
+                                            </label>
+                                            <label class="action-type-btn" id="type-opt-spell">
+                                                <input type="radio" name="combat-action-type" value="spell">
+                                                <span>Cast Spell (Cast phép)</span>
+                                            </label>
+                                            <label class="action-type-btn" id="type-opt-dash">
+                                                <input type="radio" name="combat-action-type" value="dash">
+                                                <span>Dash</span>
+                                            </label>
+                                            <label class="action-type-btn" id="type-opt-disengage">
+                                                <input type="radio" name="combat-action-type" value="disengage">
+                                                <span>Disengage</span>
+                                            </label>
+                                            <label class="action-type-btn" id="type-opt-dodge">
+                                                <input type="radio" name="combat-action-type" value="dodge">
+                                                <span>Dodge</span>
+                                            </label>
+                                            <label class="action-type-btn" id="type-opt-hide">
+                                                <input type="radio" name="combat-action-type" value="hide">
+                                                <span>Hide (Ẩn nấp)</span>
+                                            </label>
+                                            <label class="action-type-btn" id="type-opt-search">
+                                                <input type="radio" name="combat-action-type" value="search">
+                                                <span>Search (Tìm kiếm)</span>
+                                            </label>
+                                            <label class="action-type-btn" id="type-opt-useobj">
+                                                <input type="radio" name="combat-action-type" value="useobj">
+                                                <span>Use Object</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- ==========================================
+                                         SUB-PANEL 1: ATTACK ACTION (3 đòn đánh)
+                                         ========================================== -->
+                                    <div class="action-sub-panel" id="panel-action-attack">
+                                        <!-- Chọn vũ khí mặc định -->
+                                        <div class="weapon-select-block">
+                                            <span class="weapon-select-label">Vũ khí tấn công:</span>
+                                            <div class="weapon-options">
+                                                <label class="weapon-opt-btn active" id="opt-greatsword">
+                                                    <input type="radio" name="combat-weapon" value="greatsword" checked>
+                                                    <span>Mortal Wrath (2d6 + 6 Cận chiến)</span>
+                                                </label>
+                                                <label class="weapon-opt-btn" id="opt-eldritchblast">
+                                                    <input type="radio" name="combat-weapon" value="eldritchblast">
+                                                    <span>Eldritch Blast (1d10 + 4 Lực/Beam)</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Lựa chọn Sát thương Pact Weapon (Mortal Wrath) -->
+                                        <div class="pact-damage-container" id="pact-damage-control-block" style="display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.05);">
+                                            <span class="weapon-select-label" style="margin-bottom: 0;">Loại sát thương Pact:</span>
+                                            <div class="pact-damage-options" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                                <label class="weapon-opt-btn active" id="pact-dmg-slashing">
+                                                    <input type="radio" name="pact-damage-type" value="Slashing" checked>
+                                                    <span>Slashing</span>
+                                                </label>
+                                                <label class="weapon-opt-btn" id="pact-dmg-necrotic">
+                                                    <input type="radio" name="pact-damage-type" value="Necrotic">
+                                                    <span>Necrotic</span>
+                                                </label>
+                                                <label class="weapon-opt-btn" id="pact-dmg-psychic">
+                                                    <input type="radio" name="pact-damage-type" value="Psychic">
+                                                    <span>Psychic</span>
+                                                </label>
+                                                <label class="weapon-opt-btn" id="pact-dmg-radiant">
+                                                    <input type="radio" name="pact-damage-type" value="Radiant">
+                                                    <span>Radiant</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Điều khiển Mortal Wrath Stack -->
+                                        <div class="wrath-stack-container" id="wrath-stack-control-block" style="display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.05);">
+                                            <span class="weapon-select-label" style="margin-bottom: 0;">Mortal Wrath Stack:</span>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <button class="btn-hp heal" id="btn-dec-wrath" style="padding: 2px 10px; font-weight: bold; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; color: white;">-</button>
+                                                <span id="wrath-stack-value" style="font-weight: bold; font-size: 1.2rem; min-width: 20px; text-align: center; color: var(--color-accent-gold);">0</span>
+                                                <button class="btn-hp heal" id="btn-inc-wrath" style="padding: 2px 10px; font-weight: bold; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; color: white;">+</button>
+                                            </div>
+                                            <span style="font-size: 0.75rem; color: rgba(255,255,255,0.4); font-style: italic;">(Cộng dồn d4. Miss reset về 0)</span>
+                                        </div>
+
+                                        <!-- 3 Đòn đánh tương ứng 3 lượt đánh -->
+                                        <div class="strikes-list">
+                                            <!-- Đòn 1 -->
+                                            <div class="strike-row" id="strike-1">
+                                                <div class="strike-row-top">
+                                                    <div class="strike-title">ĐÒN ĐÁNH 1</div>
+                                                    <div class="strike-weapon-formula" id="strike-formula-1">Greatsword: 2d6 + 6</div>
+                                                    
+                                                    <div class="strike-toggles">
+                                                        <button class="btn-strike-toggle hit" data-strike="1" data-state="hit">TRÚNG (HIT)</button>
+                                                        <button class="btn-strike-toggle miss" data-strike="1" data-state="miss">HỤT (MISS)</button>
+                                                        <button class="btn-strike-toggle crit" data-strike="1" data-state="crit" disabled>CRIT</button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="strike-row-bottom">
+                                                    <div class="strike-addons-grid">
+                                                        <label class="addon-checkbox">
+                                                            <input type="checkbox" class="chk-strike-addon" data-strike="1" data-addon="kimonoHunt" value="2d6">
+                                                            <span class="addon-name">Kimono Hunt (+2d6)</span>
+                                                        </label>
+                                                        <label class="addon-checkbox">
+                                                            <input type="checkbox" class="chk-strike-addon" data-strike="1" data-addon="curse" value="3">
+                                                            <span class="addon-name">Curse (+3)</span>
+                                                        </label>
+                                                        <label class="addon-checkbox">
+                                                            <input type="checkbox" class="chk-strike-addon" data-strike="1" data-addon="smite" value="4d6">
+                                                            <span class="addon-name">Smite (+4d6)</span>
+                                                        </label>
+                                                    </div>
+                                                    <button class="btn-roll-single-dmg" data-strike="1" id="btn-roll-single-1">Roll Lẻ</button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Đòn 2 -->
+                                            <div class="strike-row" id="strike-2">
+                                                <div class="strike-row-top">
+                                                    <div class="strike-title">ĐÒN ĐÁNH 2</div>
+                                                    <div class="strike-weapon-formula" id="strike-formula-2">Greatsword: 2d6 + 6</div>
+                                                    
+                                                    <div class="strike-toggles">
+                                                        <button class="btn-strike-toggle hit" data-strike="2" data-state="hit">TRÚNG (HIT)</button>
+                                                        <button class="btn-strike-toggle miss" data-strike="2" data-state="miss">HỤT (MISS)</button>
+                                                        <button class="btn-strike-toggle crit" data-strike="2" data-state="crit" disabled>CRIT</button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="strike-row-bottom">
+                                                    <div class="strike-addons-grid">
+                                                        <label class="addon-checkbox">
+                                                            <input type="checkbox" class="chk-strike-addon" data-strike="2" data-addon="kimonoHunt" value="2d6">
+                                                            <span class="addon-name">Kimono Hunt (+2d6)</span>
+                                                        </label>
+                                                        <label class="addon-checkbox">
+                                                            <input type="checkbox" class="chk-strike-addon" data-strike="2" data-addon="curse" value="3">
+                                                            <span class="addon-name">Curse (+3)</span>
+                                                        </label>
+                                                        <label class="addon-checkbox">
+                                                            <input type="checkbox" class="chk-strike-addon" data-strike="2" data-addon="smite" value="4d6">
+                                                            <span class="addon-name">Smite (+4d6)</span>
+                                                        </label>
+                                                    </div>
+                                                    <button class="btn-roll-single-dmg" data-strike="2" id="btn-roll-single-2">Roll Lẻ</button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Đòn 3 -->
+                                            <div class="strike-row" id="strike-3">
+                                                <div class="strike-row-top">
+                                                    <div class="strike-title-sub-block">
+                                                        <div class="strike-title">ĐÒN ĐÁNH 3</div>
+                                                        <span class="additional-strike-badge">Đòn Đánh Phụ (Auto-Crit)</span>
+                                                    </div>
+                                                    <div class="strike-weapon-formula" id="strike-formula-3">Greatsword: 2d6 + 6</div>
+                                                    
+                                                    <div class="strike-toggles">
+                                                        <button class="btn-strike-toggle hit" data-strike="3" data-state="hit">TRÚNG (HIT)</button>
+                                                        <button class="btn-strike-toggle miss" data-strike="3" data-state="miss">HỤT (MISS)</button>
+                                                        <button class="btn-strike-toggle crit" data-strike="3" data-state="crit" disabled>CRIT</button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="strike-row-bottom">
+                                                    <div class="strike-addons-grid">
+                                                        <label class="addon-checkbox">
+                                                            <input type="checkbox" class="chk-strike-addon" data-strike="3" data-addon="kimonoHunt" value="2d6">
+                                                            <span class="addon-name">Kimono Hunt (+2d6)</span>
+                                                        </label>
+                                                        <label class="addon-checkbox">
+                                                            <input type="checkbox" class="chk-strike-addon" data-strike="3" data-addon="curse" value="3">
+                                                            <span class="addon-name">Curse (+3)</span>
+                                                        </label>
+                                                        <label class="addon-checkbox">
+                                                            <input type="checkbox" class="chk-strike-addon" data-strike="3" data-addon="smite" value="4d6">
+                                                            <span class="addon-name">Smite (+4d6)</span>
+                                                        </label>
+                                                    </div>
+                                                    <button class="btn-roll-single-dmg" data-strike="3" id="btn-roll-single-3">Roll Lẻ</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ==========================================
+                                         SUB-PANEL 2: CAST SPELL
+                                         ========================================== -->
+                                    <div class="action-sub-panel" id="panel-action-spell">
+                                        <div class="spell-panel-content">
+                                            <p class="action-panel-desc">Cast a Spell: Thi triển ma pháp của Warlock (Hexblade).</p>
+                                            <div class="quick-spells-list" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                                                 <button class="btn-quick-roll-spell" data-spell="Eldritch Blast" data-dmg="2d10" data-type="Force">Eldritch Blast (2 Beams, 1d10+4)</button>
+                                                 <button class="btn-quick-roll-spell" data-spell="Chill Touch" data-dmg="2d10" data-type="Necrotic">Chill Touch (Cantrip, 2d10)</button>
+                                                 <button class="btn-quick-roll-spell" data-spell="Booming Blade" data-dmg="1d8" data-type="Thunder">Booming Blade (Cantrip, +1d8 Lôi)</button>
+                                                 <button class="btn-quick-roll-spell" data-spell="False Life" data-dmg="0" data-type="Necromancy">False Life (Fiendish Vigor, +23 THP Free)</button>
+                                                 <button class="btn-quick-roll-spell" data-spell="Darkness" data-dmg="0" data-type="Evocation">Darkness (L2, Obscure 15ft)</button>
+                                                 <button class="btn-quick-roll-spell" data-spell="Shining Smite" data-dmg="4d6" data-type="Radiant">Shining Smite (L4, +4d6 Quang)</button>
+                                                 <button class="btn-quick-roll-spell" data-spell="Fly" data-dmg="0" data-type="Transmutation">Fly (L3, Bay 60ft)</button>
+                                                 <button class="btn-quick-roll-spell" data-spell="Dimension Door" data-dmg="0" data-type="Conjuration">Dimension Door (L4, Teleport 500ft)</button>
+                                                 <button class="btn-quick-roll-spell" data-spell="Shadow of Moil" data-dmg="2d8" data-type="Necrotic">Shadow of Moil (L4, Phản đòn 2d8 Héo)</button>
+                                                 <button class="btn-quick-roll-spell" data-spell="Revivify" data-dmg="0" data-type="Necromancy" style="border-color: rgba(46, 204, 113, 0.4); background: rgba(46, 204, 113, 0.05);">Revivify (Campaign, Hồi sinh 1 HP)</button>
+                                             </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ==========================================
+                                         SUB-PANEL 3: DASH
+                                         ========================================== -->
+                                    <div class="action-sub-panel" id="panel-action-dash">
+                                        <div class="action-panel-info">
+                                            <p class="action-panel-desc"><strong>DASH:</strong> Tăng gấp đôi tốc độ di chuyển trong lượt đi hiện tại của bạn.</p>
+                                            <div class="action-result-display">Tốc độ di chuyển tăng thêm: <span class="highlight-text">+30 ft</span> (Tổng: <span class="highlight-text">60 ft</span>)</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ==========================================
+                                         SUB-PANEL 4: DISENGAGE
+                                         ========================================== -->
+                                    <div class="action-sub-panel" id="panel-action-disengage">
+                                        <div class="action-panel-info">
+                                            <p class="action-panel-desc"><strong>DISENGAGE:</strong> Hành động rút lui an toàn. Sự di chuyển của bạn trong lượt này không kích hoạt đòn đánh cơ hội (Opportunity Attack) của đối phương.</p>
+                                            <div class="action-status-badge success">KÍCH HOẠT: KHÔNG BỊ TẤN CÔNG CƠ HỘI</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ==========================================
+                                         SUB-PANEL 5: DODGE
+                                         ========================================== -->
+                                    <div class="action-sub-panel" id="panel-action-dodge">
+                                        <div class="action-panel-info">
+                                            <p class="action-panel-desc"><strong>DODGE:</strong> Hành động né tránh. Cho đến lượt đi tiếp theo, mọi đòn tấn công cận chiến của kẻ địch lên bạn đều bị Disadvantage (Bất lợi), và bạn có Advantage (Lợi thế) trên các cú đổ cứu nạn Dexterity.</p>
+                                            <div class="action-status-badge info">KÍCH HOẠT: NÉ TRÁNH (DODGING)</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ==========================================
+                                         SUB-PANEL 6: HIDE
+                                         ========================================== -->
+                                    <div class="action-sub-panel" id="panel-action-hide">
+                                        <div class="action-panel-info">
+                                            <p class="action-panel-desc"><strong>HIDE:</strong> Thực hiện bài kiểm tra Stealth (Ẩn nấp) để lẩn tránh tầm nhìn kẻ địch.</p>
+                                            <button class="btn-quick-action-roll" id="btn-quick-roll-stealth">ROLL STEALTH (ẨN NẤP) (+2)</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- ==========================================
+                                         SUB-PANEL 7: SEARCH
+                                         ========================================== -->
+                                    <div class="action-sub-panel" id="panel-action-search">
+                                        <div class="action-panel-info">
+                                            <p class="action-panel-desc"><strong>SEARCH:</strong> Dành hành động để tìm kiếm vật phẩm, lối đi bí mật hoặc phát hiện ẩn nấp.</p>
+                                            <div class="quick-rolls-row">
+                                                <button class="btn-quick-action-roll" id="btn-quick-roll-perception">ROLL PERCEPTION (+6)</button>
+                                                <button class="btn-quick-action-roll" id="btn-quick-roll-investigation">ROLL INVESTIGATION (+3)</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ==========================================
+                                         SUB-PANEL 8: USE OBJECT
+                                         ========================================== -->
+                                    <div class="action-sub-panel" id="panel-action-useobj">
+                                        <div class="action-panel-info">
+                                            <p class="action-panel-desc"><strong>USE OBJECT:</strong> Sử dụng một vật phẩm hoặc uống thuốc dược (Potion) hồi máu từ túi đồ.</p>
+                                            <button class="btn-quick-action-roll item-use" id="btn-quick-use-potion">UỐNG POTION OF GREATER HEALING (HỒI 4d4 + 4 HP)</button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- BONUS ACTION -->
+                            <div class="turn-action-card">
+                                <label class="action-card-header">
+                                    <input type="checkbox" id="chk-bonus" class="combat-chk-main">
+                                    <span class="switch-box-main"></span>
+                                    <div class="action-header-text">
+                                        <span class="action-title-main">BONUS ACTION (HÀNH ĐỘNG PHỤ)</span>
+                                        <span class="action-desc-main">Sử dụng Lời nguyền Hexblade, di chuyển Kimono, thi triển Smite nhanh...</span>
+                                    </div>
+                                </label>
+                                
+                                <div class="action-details-panel" id="bonus-action-details-panel">
+                                    <div class="bonus-actions-list">
+                                        <!-- Hexblade's Curse -->
+                                        <div class="bonus-action-item" data-action="curse">
+                                            <div class="bonus-action-info">
+                                                <div class="bonus-action-name">Hexblade's Curse (Lời nguyền Hexblade - 1/Short Rest)</div>
+                                                <div class="bonus-action-desc">Mục tiêu bị nguyền rủa chịu thêm +3 sát thương, tỉ lệ Chí mạng tăng thành 19-20, và Ragna được hồi 11 HP khi mục tiêu bị tiêu diệt.</div>
+                                            </div>
+                                            <button class="btn-bonus-action" id="btn-use-curse">KÍCH HOẠT</button>
+                                        </div>
+
+                                        <!-- Pact of the Blade -->
+                                        <div class="bonus-action-item" data-action="pact">
+                                            <div class="bonus-action-info">
+                                                <div class="bonus-action-name">Pact of the Blade (Liên kết Pact Weapon)</div>
+                                                <div class="bonus-action-desc">Liên kết hoặc triệu hồi vũ khí Pact (Mortal Wrath). Cho phép dùng chỉ số CHA (+4) thay cho STR/DEX cho đòn đánh.</div>
+                                            </div>
+                                            <button class="btn-bonus-action" id="btn-use-pact">TRIỆU HỒI</button>
+                                        </div>
+
+                                        <!-- Surface Echo -->
+                                        <div class="bonus-action-item" data-action="surface-echo">
+                                            <div class="bonus-action-info">
+                                                <div class="bonus-action-name">Surface Echo (Mặt nạ - 1/Short Rest)</div>
+                                                <div class="bonus-action-desc">Đọc ý nghĩ bề mặt của một sinh vật trong vòng 30 ft (INT ≥ 6) trong vòng 1 round. Đối phương cảm nhận được có thứ gì đó chạm vào tâm trí.</div>
+                                            </div>
+                                            <button class="btn-bonus-action" id="btn-use-surface-echo">KÍCH HOẠT</button>
+                                        </div>
+
+                                        <!-- Command Word: Repel -->
+                                        <div class="bonus-action-item" data-action="repel">
+                                            <div class="bonus-action-info">
+                                                <div class="bonus-action-name">Command Word: Repel (Khẩu lệnh Đẩy lùi)</div>
+                                                <div class="bonus-action-desc">Sinh vật trong nón 30 ft phải thực hiện Wisdom Save DC 15 hoặc bị Frightened 1 phút. Fiend: Disadvantage Save, tốc độ giảm về 0 ở lượt đầu.</div>
+                                            </div>
+                                            <button class="btn-bonus-action" id="btn-use-repel">KÍCH HOẠT</button>
+                                        </div>
+
+                                        <!-- Command Word: Hunt -->
+                                        <div class="bonus-action-item" data-action="hunt">
+                                            <div class="bonus-action-info">
+                                                <div class="bonus-action-name">Command Word: Hunt (Khẩu lệnh Săn đuổi - 1/Long Rest)</div>
+                                                <div class="bonus-action-desc">Dịch chuyển 30 ft đến cạnh mục tiêu đang bị Frightened. Đòn đánh đầu tiên trúng gây thêm +2d6 Radiant damage. Reroll d6 sau khi dùng (1-2 mất phép đến bình minh).</div>
+                                            </div>
+                                            <button class="btn-bonus-action" id="btn-use-hunt">KÍCH HOẠT</button>
+                                        </div>
+
+                                        <!-- Shining Smite -->
+                                        <div class="bonus-action-item" data-action="shining-smite">
+                                            <div class="bonus-action-info">
+                                                <div class="bonus-action-name">Shining Smite (Đòn đánh phát sáng - Spell Bậc 4)</div>
+                                                <div class="bonus-action-desc">Cast phép nhanh ngay sau khi đánh trúng cận chiến. Gây thêm +4d6 Radiant, mục tiêu phát sáng, đồng thời đòn đánh kế tiếp lên mục tiêu có Lợi thế (Advantage).</div>
+                                            </div>
+                                            <button class="btn-quick-roll-spell" data-spell="Shining Smite" data-dmg="4d6" data-type="Radiant">ROLL SÁT THƯƠNG</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- REACTION -->
+                            <div class="turn-action-card">
+                                <label class="action-card-header">
+                                    <input type="checkbox" id="chk-reaction" class="combat-chk-main">
+                                    <span class="switch-box-main"></span>
+                                    <div class="action-header-text">
+                                        <span class="action-title-main">REACTION (PHẢN ỨNG)</span>
+                                        <span class="action-desc-main">Cast Khiên phép Shield (+5 AC), Phản phép Counterspell, Đòn đánh cơ hội...</span>
+                                    </div>
+                                </label>
+
+                                <div class="action-details-panel" id="reaction-action-details-panel">
+                                    <div class="reaction-actions-list">
+                                        <!-- Shield -->
+                                        <div class="reaction-action-item" data-action="shield" id="reaction-item-shield">
+                                            <div class="reaction-action-info">
+                                                <div class="reaction-action-name">Shield (Khiên Phép - Spell Bậc 4)</div>
+                                                <div class="reaction-action-desc">Tạo rào chắn ma thuật giúp nhận +5 AC (tổng AC tăng lên 24) và miễn nhiễm sát thương từ Magic Missile cho tới đầu lượt tiếp theo của bạn.</div>
+                                            </div>
+                                            <button class="btn-reaction-action" id="btn-use-shield">CAST SHIELD</button>
+                                        </div>
+
+                                        <!-- Counterspell -->
+                                        <div class="reaction-action-item" data-action="counterspell">
+                                            <div class="reaction-action-info">
+                                                <div class="reaction-action-name">Counterspell (Phản Phép - Spell Bậc 4)</div>
+                                                <div class="reaction-action-desc">Cản trở mục tiêu trong 60 ft đang cast phép. Mục tiêu phải thực hiện Constitution Save DC 15, thất bại phép bị triệt tiêu hoàn toàn.</div>
+                                            </div>
+                                            <button class="btn-reaction-action" id="btn-use-counterspell">CAST COUNTERSPELL</button>
+                                        </div>
+
+                                        <!-- Opportunity Attack -->
+                                        <div class="reaction-action-item" data-action="opportunity-attack">
+                                            <div class="reaction-action-info">
+                                                <div class="reaction-action-name">Opportunity Attack (Đòn Đánh Cơ Hội)</div>
+                                                <div class="reaction-action-desc">Thực hiện đòn đánh cận chiến bằng vũ khí Mortal Wrath khi kẻ địch di chuyển ra khỏi tầm cận chiến của bạn (+9 to hit).</div>
+                                            </div>
+                                            <button class="btn-reaction-action" id="btn-use-opportunity-attack">TẤN CÔNG CƠ HỘI</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MOVEMENT -->
+                            <div class="turn-action-card">
+                                <label class="action-card-header">
+                                    <input type="checkbox" id="chk-movement" class="combat-chk-main">
+                                    <span class="switch-box-main"></span>
+                                    <div class="action-header-text">
+                                        <span class="action-title-main">MOVEMENT (DI CHUYỂN)</span>
+                                        <span class="action-desc-main">Di chuyển quãng đường tối đa là 30 ft trong lượt.</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- KHỐI TỔNG HỢP DICE POOL -->
+                        <div class="dice-pool-summary-box">
+                            <div class="pool-left">
+                                <span class="pool-title">Xúc xắc tích lũy (Dice Pool):</span>
+                                <div class="pool-dice-expression" id="pool-dice-expression">0 dice + 0 Mod</div>
+                            </div>
+                            <button class="btn-roll-total-dice" id="btn-roll-total-dice">ROLL TỔNG DICE</button>
+                        </div>
+
+                        <!-- KHỐI KẾT QUẢ SÁT THƯƠNG THỰC TẾ -->
+                        <div class="damage-output-panel" id="damage-output-panel">
+                            <!-- Danh sách các loại sát thương được tách riêng, sinh động bằng JS -->
+                            <div class="damage-components-list" id="damage-components-list"></div>
+                            
+                            <!-- Khối tổng sát thương cuối cùng -->
+                            <div class="total-damage-block" id="total-damage-block">
+                                <span class="total-dmg-label">TỔNG SÁT THƯƠNG (TOTAL DMG)</span>
+                                <span class="total-dmg-value" id="total-dmg-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SIDEBAR BÊN PHẢI: TÀI NGUYÊN, CỨU NẠN & TRẠNG THÁI -->
+                    <div class="combat-right-sidebar">
+                        
+                        <!-- Quản lý tài nguyên đặc biệt Warlock (Warlock Resources) -->
+                        <div class="action-tracker-panel glass-panel">
+                            <h3 class="panel-title">TÀI NGUYÊN CHIẾN ĐẤU (RESOURCES)</h3>
+                            <div class="fighter-resources">
+                                <div class="resource-boxes" style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="display: flex; gap: 8px;">
+                                        <div class="resource-box" id="res-hexblade-curse" style="flex: 1;">
+                                            <div class="res-label" title="Hexblade's Curse (1/Short or Long Rest)">Hex Curse</div>
+                                            <input type="checkbox" id="chk-res-curse" class="resource-chk">
+                                        </div>
+                                        <div class="resource-box" id="res-accursed-specter" style="flex: 1;">
+                                            <div class="res-label" title="Accursed Specter (1/Long Rest)">Specter</div>
+                                            <input type="checkbox" id="chk-res-specter" class="resource-chk">
+                                        </div>
+                                        <div class="resource-box" id="res-magical-cunning" style="flex: 1;">
+                                            <div class="res-label" title="Magical Cunning (1/Long Rest)">Cunning</div>
+                                            <input type="checkbox" id="chk-res-cunning" class="resource-chk">
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        <div class="resource-box" id="res-mask-disguise" style="flex: 1;">
+                                            <div class="res-label" title="Veil of False Skin (2/Long Rest)">Mask Disguise</div>
+                                            <div style="display:flex; gap:4px; justify-content: center;">
+                                                <input type="checkbox" id="chk-res-maskDisguise1" class="resource-chk">
+                                                <input type="checkbox" id="chk-res-maskDisguise2" class="resource-chk">
+                                            </div>
+                                        </div>
+                                        <div class="resource-box" id="res-mask-thoughts" style="flex: 1;">
+                                            <div class="res-label" title="Surface Echo (1/Short Rest)">Mask Thoughts</div>
+                                            <input type="checkbox" id="chk-res-maskThoughts" class="resource-chk">
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        <div class="resource-box" id="res-kimono-hunt" style="flex: 1;">
+                                            <div class="res-label" title="Command Word: Hunt (1/Long Rest)">Kimono Hunt</div>
+                                            <input type="checkbox" id="chk-res-kimonoHunt" class="resource-chk">
+                                        </div>
+                                        <div class="resource-box" id="res-seed-life" style="flex: 1;">
+                                            <div class="res-label" title="Life Pulse (1/Long Rest)">Seed Life</div>
+                                            <input type="checkbox" id="chk-res-seedLife" class="resource-chk">
+                                        </div>
+                                    </div>
+                                    <div class="resource-box" id="res-graspless" style="width: 100%;">
+                                        <div class="res-label" title="Graspless FF (3/Long Rest)">Graspless Fractured Form</div>
+                                        <div style="display:flex; gap:12px; justify-content: center;">
+                                            <input type="checkbox" id="chk-res-graspless1" class="resource-chk">
+                                            <input type="checkbox" id="chk-res-graspless2" class="resource-chk">
+                                            <input type="checkbox" id="chk-res-graspless3" class="resource-chk">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Spell Slots Resource Tracker -->
+                            <div class="spell-slots-tracker" style="margin-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 16px;">
+                                <div class="spell-slot-row">
+                                    <span class="slot-label" style="min-width: 120px;">Pact Slots (Bậc 4):</span>
+                                    <div class="slot-circles">
+                                        <input type="checkbox" class="slot-chk">
+                                        <input type="checkbox" class="slot-chk">
+                                        <span class="slot-total">(2 Ô)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trạng thái kích hoạt (Conditions) -->
+                        <div class="combat-saves-conditions glass-panel">
+                            <h3 class="panel-title conditions-title" style="margin-top: 0;">TRẠNG THÁI (CONDITIONS)</h3>
+                            <div class="conditions-grid" id="conditions-container">
+                                <label class="condition-chip" id="cond-blinded">
+                                    <input type="checkbox" value="blinded">
+                                    <span>Blinded</span>
+                                </label>
+                                <label class="condition-chip" id="cond-frightened">
+                                    <input type="checkbox" value="frightened">
+                                    <span>Frightened</span>
+                                </label>
+                                <label class="condition-chip" id="cond-poisoned">
+                                    <input type="checkbox" value="poisoned">
+                                    <span>Poisoned</span>
+                                </label>
+                                <label class="condition-chip" id="cond-prone">
+                                    <input type="checkbox" value="prone">
+                                    <span>Prone</span>
+                                </label>
+                                <label class="condition-chip" id="cond-stunned">
+                                    <input type="checkbox" value="stunned">
+                                    <span>Stunned</span>
+                                </label>
+                                <label class="condition-chip" id="cond-unconscious">
+                                    <input type="checkbox" value="unconscious">
+                                    <span>Unconscious</span>
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==========================================
+         POP-UP TRÌNH TUNG XÚC XẮC (DICE ROLLER MODAL)
+         ========================================== -->
+    <div class="dice-modal-overlay" id="dice-modal-overlay">
+        <div class="dice-modal glass-panel" id="dice-modal">
+            
+            <button class="btn-close-modal" id="btn-close-dice-modal">&times;</button>
+            
+            <div class="dice-roll-info">
+                <div class="dice-roll-title" id="dice-roll-title">Đang tung xúc xắc...</div>
+                <div class="dice-roll-subtitle" id="dice-roll-subtitle">GREATSWORD ATTACK</div>
+            </div>
+
+            <!-- Khu vực đồ họa xúc xắc quay (Dice animation wrapper) -->
+            <div class="dice-graphic-container">
+                <div class="dice-d20-visual" id="dice-visual">
+                    <!-- SVG d20 hoặc CSS 3D dice -->
+                    <svg viewBox="0 0 100 100" class="d20-svg">
+                        <polygon points="50,5 95,30 95,70 50,95 5,70 5,30" fill="rgba(20,20,20,0.8)" stroke="#ff6f2a" stroke-width="2"/>
+                        <!-- Top triangle -->
+                        <polygon points="50,5 25,40 75,40" fill="rgba(255,111,42,0.15)" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <!-- Other panels -->
+                        <polygon points="5,30 25,40 50,5" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="95,30 75,40 50,5" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="5,30 25,40 5,70" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="95,30 75,40 95,70" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        
+                        <polygon points="25,40 50,95 5,70" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="75,40 50,95 95,70" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="25,40 75,40 50,95" fill="rgba(255,111,42,0.05)" stroke="#ff6f2a" stroke-width="1.5"/>
+                        
+                        <!-- Number Display in Center -->
+                        <text x="50" y="58" font-family="'Cinzel', serif" font-weight="bold" font-size="22" fill="#ffffff" text-anchor="middle" id="dice-number-text">20</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Kết quả tính toán chi tiết -->
+            <div class="dice-results-block">
+                <div class="dice-formula" id="dice-calc-formula">Đổ: 1d20 + 9</div>
+                <div class="dice-calculation" id="dice-calc-details">
+                    <span class="calc-part die-result" id="dice-calc-die">14</span>
+                    <span class="calc-operator">+</span>
+                    <span class="calc-part modifier-value" id="dice-calc-mod">9</span>
+                </div>
+                <div class="dice-total-display" id="dice-total-display">23</div>
+                <div class="dice-crit-alert" id="dice-crit-text">TRÚNG!</div>
+            </div>
+
+            <button class="btn-dismiss-roll" id="btn-dismiss-roll">ĐỒNG Ý</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         GSAP & Lenis CDN
+         ═══════════════════════════════════════════ -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+
+    <!-- Custom Logic Script -->
+    <script src="assets/js/combat-sheet.js"></script>
+</body>
+</html>

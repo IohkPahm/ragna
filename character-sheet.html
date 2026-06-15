@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Sheet - Ragna | D&D 5e</title>
+    <meta name="description" content="Trang bảng thông tin nhân vật D&D 5e dành cho Ragna. Xem chỉ số, kỹ năng, trang bị và tham gia combat với công cụ xúc xắc ảo trực quan.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Pinyon+Script&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/character-sheet.css">
+</head>
+<body>
+
+    <!-- Nền tối kết hợp hình background có sẵn -->
+    <div class="page-background"></div>
+    <div class="page-background-overlay"></div>
+
+    <!-- Header Navigation -->
+    <header class="header">
+        <a href="index.html" class="logo" id="header-logo">LUMEN</a>
+        <nav class="nav-links">
+            <a href="index.html" id="nav-home">Trang chủ</a>
+            <a href="combat-sheet.html" class="btn-combat-toggle" id="btn-combat-toggle">COMBAT</a>
+        </nav>
+    </header>
+
+    <!-- Toàn bộ nội dung Character Sheet -->
+    <main class="sheet-container" id="sheet-container">
+        
+        <!-- ==========================================
+             MÀN HÌNH 1: XEM CHỈ SỐ CHI TIẾT (VIEW MODE)
+             ========================================== -->
+        <section class="sheet-screen active" id="view-screen">
+            <div class="screen-layout-grid" style="grid-template-columns: 360px 1fr;">
+                
+                <!-- Cột 1: Thông tin thẻ nhân vật (Card Portrait) -->
+                <div class="column-card glass-panel" id="char-portrait-card">
+                    <div class="portrait-container">
+                        <img src="assets/images/character-ragna.svg" alt="Ragna Character" class="char-portrait-img" id="char-portrait-img">
+                        <div class="portrait-shadow"></div>
+                    </div>
+                    
+                    <div class="char-name-block">
+                        <h1 class="char-name" id="char-name-title">RAGNA</h1>
+                        <div class="char-title">HOPE ZENGI</div>
+                        <div class="divider-line"></div>
+                    </div>
+
+                    <div class="char-meta-info">
+                        <div class="meta-row">
+                            <span class="meta-label">Class</span>
+                            <span class="meta-value">Warlock (Hexblade)</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Level</span>
+                            <span class="meta-value">7</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Race</span>
+                            <span class="meta-value">Shadar-kai</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Pact</span>
+                            <span class="meta-value">Pact of the Blade</span>
+                        </div>
+                    </div>
+
+                    <div class="quick-stats-grid">
+                        <div class="quick-stat-box rollable" id="stat-ac-box" style="cursor:pointer;" title="Kích hoạt khiên chắn AC nếu có Shield">
+                            <div class="stat-box-value" id="ac-value-display">19</div>
+                            <div class="stat-box-label">Armor Class (AC)</div>
+                        </div>
+                        <div class="quick-stat-box rollable" id="stat-init-box" style="cursor:pointer;">
+                            <div class="stat-box-value">+2</div>
+                            <div class="stat-box-label">Initiative</div>
+                        </div>
+                        <div class="quick-stat-box" id="stat-speed-box">
+                            <div class="stat-box-value">30 ft</div>
+                            <div class="stat-box-label">Speed</div>
+                        </div>
+                    </div>
+
+                    <div class="view-hp-bar-container">
+                        <div class="hp-bar-header">
+                            <span>HP / Máu Tạm Thời</span>
+                            <span class="hp-text-display"><span id="view-current-hp">54</span> / 54 <span id="view-temp-hp-label" style="color:var(--color-info); display:none;">(+<span id="view-temp-hp">0</span> THP)</span></span>
+                        </div>
+                        <div class="hp-bar-bg" style="height:12px;">
+                            <div class="hp-bar-fill" id="view-hp-bar-fill" style="width: 100%;"></div>
+                            <div class="hp-temp-fill" id="view-temp-bar-fill" style="width: 0%; left: 100%; height: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cột 2: Tab Container chứa toàn bộ thông tin chi tiết -->
+                <div class="tabs-wrapper glass-panel" style="padding: 24px;">
+                    <!-- Hệ thống nút chuyển Tab -->
+                    <div class="tab-buttons">
+                        <button class="tab-button active" data-tab="stats">Chỉ số & Kỹ năng</button>
+                        <button class="tab-button" data-tab="resources">Tài nguyên & Đồ đạc</button>
+                        <button class="tab-button" data-tab="spells">Bộ Phép Chuẩn Bị</button>
+                        <button class="tab-button" data-tab="feats">Class Features & Feats</button>
+                    </div>
+
+                    <!-- Hệ thống nội dung Tab -->
+                    <div class="tab-panes">
+                        
+                        <!-- TAB 1: CHỈ SỐ & KỸ NĂNG -->
+                        <div class="tab-pane active" id="tab-pane-stats">
+                            <div class="ability-skills-grid">
+                                
+                                <!-- STRENGTH CARD -->
+                                <div class="ability-skill-card glass-panel">
+                                    <div class="ability-skill-header rollable" data-ability="STR" data-mod="1">
+                                        <div class="ability-skill-title-block">
+                                            <span class="ability-skill-name">STR</span>
+                                            <span class="ability-skill-fullname">Strength (Sức mạnh)</span>
+                                        </div>
+                                        <div class="ability-skill-score-block">
+                                            <span class="ability-skill-score">13</span>
+                                            <span class="ability-skill-mod">+1</span>
+                                        </div>
+                                    </div>
+                                    <div class="ability-save-row rollable" data-save="STR" data-bonus="2">
+                                        <span class="ability-save-label"><span class="ability-save-shield">🛡️</span> Cứu nạn (Saving Throw)</span>
+                                        <span class="ability-save-value">+2</span>
+                                    </div>
+                                    <div class="ability-skill-rows-list">
+                                        <div class="card-skill-row rollable" data-skill="Athletics" data-bonus="1">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Athletics <span class="card-skill-desc">(Điền kinh)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+1</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- DEXTERITY CARD -->
+                                <div class="ability-skill-card glass-panel">
+                                    <div class="ability-skill-header rollable" data-ability="DEX" data-mod="2">
+                                        <div class="ability-skill-title-block">
+                                            <span class="ability-skill-name">DEX</span>
+                                            <span class="ability-skill-fullname">Dexterity (Khéo léo)</span>
+                                        </div>
+                                        <div class="ability-skill-score-block">
+                                            <span class="ability-skill-score">14</span>
+                                            <span class="ability-skill-mod">+2</span>
+                                        </div>
+                                    </div>
+                                    <div class="ability-save-row rollable" data-save="DEX" data-bonus="3">
+                                        <span class="ability-save-label"><span class="ability-save-shield">🛡️</span> Cứu nạn (Saving Throw)</span>
+                                        <span class="ability-save-value">+3</span>
+                                    </div>
+                                    <div class="ability-skill-rows-list">
+                                        <div class="card-skill-row rollable" data-skill="Acrobatics" data-bonus="2">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Acrobatics <span class="card-skill-desc">(Nhào lộn)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+2</span>
+                                        </div>
+                                        <div class="card-skill-row rollable" data-skill="Sleight of Hand" data-bonus="2">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Sleight of Hand <span class="card-skill-desc">(Khéo tay)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+2</span>
+                                        </div>
+                                        <div class="card-skill-row rollable" data-skill="Stealth" data-bonus="2">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Stealth <span class="card-skill-desc">(Ẩn nấp)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+2</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- CONSTITUTION CARD -->
+                                <div class="ability-skill-card glass-panel">
+                                    <div class="ability-skill-header rollable" data-ability="CON" data-mod="3">
+                                        <div class="ability-skill-title-block">
+                                            <span class="ability-skill-name">CON</span>
+                                            <span class="ability-skill-fullname">Constitution (Thể chất)</span>
+                                        </div>
+                                        <div class="ability-skill-score-block">
+                                            <span class="ability-skill-score">17</span>
+                                            <span class="ability-skill-mod">+3</span>
+                                        </div>
+                                    </div>
+                                    <div class="ability-save-row rollable" data-save="CON" data-bonus="4">
+                                        <span class="ability-save-label"><span class="ability-save-shield">🛡️</span> Cứu nạn (Saving Throw)</span>
+                                        <span class="ability-save-value">+4</span>
+                                    </div>
+                                    <div class="ability-skill-rows-list">
+                                        <div class="card-skill-row" style="cursor:default; background:none; border:none; opacity:0.5;">
+                                            <span class="card-skill-name">Không có kỹ năng liên quan</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- INTELLIGENCE CARD -->
+                                <div class="ability-skill-card glass-panel">
+                                    <div class="ability-skill-header rollable" data-ability="INT" data-mod="3">
+                                        <div class="ability-skill-title-block">
+                                            <span class="ability-skill-name">INT</span>
+                                            <span class="ability-skill-fullname">Intelligence (Trí tuệ)</span>
+                                        </div>
+                                        <div class="ability-skill-score-block">
+                                            <span class="ability-skill-score">16</span>
+                                            <span class="ability-skill-mod">+3</span>
+                                        </div>
+                                    </div>
+                                    <div class="ability-save-row rollable" data-save="INT" data-bonus="4">
+                                        <span class="ability-save-label"><span class="ability-save-shield">🛡️</span> Cứu nạn (Saving Throw)</span>
+                                        <span class="ability-save-value">+4</span>
+                                    </div>
+                                    <div class="ability-skill-rows-list">
+                                        <div class="card-skill-row rollable" data-skill="Arcana" data-bonus="6">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot marked">●</span>
+                                                <span class="card-skill-name">Arcana <span class="card-skill-desc">(Cổ thuật)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+6</span>
+                                        </div>
+                                        <div class="card-skill-row rollable" data-skill="History" data-bonus="3">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">History <span class="card-skill-desc">(Lịch sử)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+3</span>
+                                        </div>
+                                        <div class="card-skill-row rollable" data-skill="Investigation" data-bonus="3">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Investigation <span class="card-skill-desc">(Điều tra)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+3</span>
+                                        </div>
+                                        <div class="card-skill-row rollable" data-skill="Nature" data-bonus="3">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Nature <span class="card-skill-desc">(Tự nhiên)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+3</span>
+                                        </div>
+                                        <div class="card-skill-row rollable" data-skill="Religion" data-bonus="3">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Religion <span class="card-skill-desc">(Tôn giáo)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+3</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- WISDOM CARD -->
+                                <div class="ability-skill-card glass-panel">
+                                    <div class="ability-skill-header rollable" data-ability="WIS" data-mod="3">
+                                        <div class="ability-skill-title-block">
+                                            <span class="ability-skill-name">WIS</span>
+                                            <span class="ability-skill-fullname">Wisdom (Khôn ngoan)</span>
+                                        </div>
+                                        <div class="ability-skill-score-block">
+                                            <span class="ability-skill-score">16</span>
+                                            <span class="ability-skill-mod">+3</span>
+                                        </div>
+                                    </div>
+                                    <div class="ability-save-row rollable" data-save="WIS" data-bonus="7">
+                                        <span class="ability-save-label"><span class="ability-save-shield">🛡️</span> Cứu nạn (Saving Throw)</span>
+                                        <span class="ability-save-value">+7</span>
+                                    </div>
+                                    <div class="ability-skill-rows-list">
+                                        <div class="card-skill-row rollable" data-skill="Animal Handling" data-bonus="3">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Animal Handling <span class="card-skill-desc">(Thuần thú)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+3</span>
+                                        </div>
+                                        <div class="card-skill-row rollable" data-skill="Insight" data-bonus="3">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Insight <span class="card-skill-desc">(Thấu suốt)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+3</span>
+                                        </div>
+                                        <div class="card-skill-row rollable" data-skill="Medicine" data-bonus="3">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Medicine <span class="card-skill-desc">(Y học)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+3</span>
+                                        </div>
+                                        <div class="card-skill-row rollable" data-skill="Perception" data-bonus="6">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot marked">●</span>
+                                                <span class="card-skill-name">Perception <span class="card-skill-desc">(Quan sát)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+6</span>
+                                        </div>
+                                        <div class="card-skill-row rollable" data-skill="Survival" data-bonus="3">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Survival <span class="card-skill-desc">(Sinh tồn)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+3</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- CHARISMA CARD -->
+                                <div class="ability-skill-card glass-panel">
+                                    <div class="ability-skill-header rollable" data-ability="CHA" data-mod="4">
+                                        <div class="ability-skill-title-block">
+                                            <span class="ability-skill-name">CHA</span>
+                                            <span class="ability-skill-fullname">Charisma (Sức hút)</span>
+                                        </div>
+                                        <div class="ability-skill-score-block">
+                                            <span class="ability-skill-score">19</span>
+                                            <span class="ability-skill-mod">+4</span>
+                                        </div>
+                                    </div>
+                                    <div class="ability-save-row rollable" data-save="CHA" data-bonus="8">
+                                        <span class="ability-save-label"><span class="ability-save-shield">🛡️</span> Cứu nạn (Saving Throw)</span>
+                                        <span class="ability-save-value">+8</span>
+                                    </div>
+                                    <div class="ability-skill-rows-list">
+                                        <div class="card-skill-row rollable" data-skill="Deception" data-bonus="7">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot marked">●</span>
+                                                <span class="card-skill-name">Deception <span class="card-skill-desc">(Lừa dối)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+7</span>
+                                        </div>
+                                        <div class="card-skill-row rollable" data-skill="Intimidation" data-bonus="4">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Intimidation <span class="card-skill-desc">(Đe dọa)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+4</span>
+                                        </div>
+                                        <div class="card-skill-row rollable" data-skill="Performance" data-bonus="4">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Performance <span class="card-skill-desc">(Biểu diễn)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+4</span>
+                                        </div>
+                                        <div class="card-skill-row rollable" data-skill="Persuasion" data-bonus="4">
+                                            <div class="card-skill-left">
+                                                <span class="card-skill-dot">○</span>
+                                                <span class="card-skill-name">Persuasion <span class="card-skill-desc">(Thuyết phục)</span></span>
+                                            </div>
+                                            <span class="card-skill-bonus">+4</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: TÀI NGUYÊN & TRANG BỊ -->
+                        <div class="tab-pane" id="tab-pane-resources">
+                            <div class="tab-resources-block">
+                                <!-- Bộ theo dõi tài nguyên -->
+                                <div class="interactive-resources-panel glass-panel">
+                                    <h3 class="panel-title">THEO DÕI TÀI NGUYÊN GIỚI HẠN</h3>
+                                    <div class="resources-flex-grid">
+                                        <div class="interactive-res-box" title="Warlock Pact Magic Slots (Bậc 4, Hồi khi Short/Long Rest)">
+                                            <span class="interactive-res-label">Pact Slots (Level 4)</span>
+                                            <div class="interactive-res-controls">
+                                                <input type="checkbox" class="interactive-res-chk slot-sync-chk" data-slot-idx="0">
+                                                <input type="checkbox" class="interactive-res-chk slot-sync-chk" data-slot-idx="1">
+                                            </div>
+                                        </div>
+                                        <div class="interactive-res-box" title="Hexblade's Curse (1/Short or Long Rest)">
+                                            <span class="interactive-res-label">Hex Curse</span>
+                                            <div class="interactive-res-controls">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="curse">
+                                            </div>
+                                        </div>
+                                        <div class="interactive-res-box" title="Accursed Specter (1/Long Rest)">
+                                            <span class="interactive-res-label">Specter Companion</span>
+                                            <div class="interactive-res-controls">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="specter">
+                                            </div>
+                                        </div>
+                                        <div class="interactive-res-box" title="Magical Cunning (1/Long Rest) - Dùng 1 phút hồi 1 Pact slot">
+                                            <span class="interactive-res-label">Magical Cunning</span>
+                                            <div class="interactive-res-controls">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="cunning">
+                                            </div>
+                                        </div>
+                                        <div class="interactive-res-box" title="Shapeshifter Mask - Veil of False Skin (2/Long Rest)">
+                                            <span class="interactive-res-label">Mask Disguise</span>
+                                            <div class="interactive-res-controls">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="maskDisguise1">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="maskDisguise2">
+                                            </div>
+                                        </div>
+                                        <div class="interactive-res-box" title="Shapeshifter Mask - Surface Echo (1/Short Rest) - Đọc ý nghĩ">
+                                            <span class="interactive-res-label">Mask Thoughts</span>
+                                            <div class="interactive-res-controls">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="maskThoughts">
+                                            </div>
+                                        </div>
+                                        <div class="interactive-res-box" title="Demon Hunter Kimono - Word Hunt (1/Long Rest) - Teleport chém radiant">
+                                            <span class="interactive-res-label">Kimono Hunt</span>
+                                            <div class="interactive-res-controls">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="kimonoHunt">
+                                            </div>
+                                        </div>
+                                        <div class="interactive-res-box" title="Seed of Life Burst - Life Pulse (1/Long Rest) - Phép Life Burst miễn phí">
+                                            <span class="interactive-res-label">Seed Life Pulse</span>
+                                            <div class="interactive-res-controls">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="seedLife">
+                                            </div>
+                                        </div>
+                                        <div class="interactive-res-box" title="Fractured Form - Graspless (3/Long Rest) - Thoát khống chế">
+                                            <span class="interactive-res-label">Graspless FF</span>
+                                            <div class="interactive-res-controls">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="graspless1">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="graspless2">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="graspless3">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Danh sách trang bị ma pháp -->
+                                <div class="interactive-items-panel glass-panel">
+                                    <h3 class="panel-title" style="margin-bottom:12px;">KHO TRANG BỊ MA PHÁP (Click để mở chi tiết)</h3>
+                                    
+                                    <div class="coinage" style="margin-bottom: 20px;">
+                                        <div class="coin-box copper" title="Copper Coins" style="cursor:pointer;" id="coin-cp-btn"><span>12</span> CP</div>
+                                        <div class="coin-box silver" title="Silver Coins" style="cursor:pointer;" id="coin-sp-btn"><span>45</span> SP</div>
+                                        <div class="coin-box gold" title="Gold Coins" style="cursor:pointer;" id="coin-gp-btn"><span>320</span> GP</div>
+                                        <div class="coin-box platinum" title="Platinum Coins" style="cursor:pointer;" id="coin-pp-btn"><span>15</span> PP</div>
+                                    </div>
+
+                                    <div class="items-vertical-list">
+                                        <!-- Mortal Wrath -->
+                                        <div class="interactive-item-card" id="item-mortal-wrath">
+                                            <div class="item-card-top">
+                                                <div class="item-card-title-block">
+                                                    <span class="item-card-title rare">Mortal Wrath (Greatsword +2)</span>
+                                                    <span class="item-card-rarity">Vũ Khí Liên Kết, Rare (Attunement)</span>
+                                                </div>
+                                                <div class="item-card-actions">
+                                                    <span class="item-weight">6 lbs</span>
+                                                </div>
+                                            </div>
+                                            <div class="item-card-desc">
+                                                <p><strong>Hiệu ứng:</strong> +2 Attack & Damage rolls. Gây sát thương Slashing, Necrotic, Psychic, hoặc Radiant cận chiến thạo dựa trên Charisma (CHA).</p>
+                                                <p><strong>Wrath Accumulation (Tích tụ Phẫn nộ):</strong> Mỗi hit đánh trúng cộng dồn +1d4 Necrotic damage. Đòn Crit nhân đôi số xúc xắc necrotic phẫn nộ của đòn đó và **KHÔNG** làm reset stack. Miss đòn đánh làm reset stack về 0.</p>
+                                                <p><strong>Soul's Toll:</strong> Kết thúc combat, nếu stack đạt từ 6d4 trở lên ở bất kỳ thời điểm nào, bạn tự chịu 2d8 Necrotic damage không thể kháng/giảm.</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Cloak of Protection -->
+                                        <div class="interactive-item-card" id="item-cloak">
+                                            <div class="item-card-top">
+                                                <div class="item-card-title-block">
+                                                    <span class="item-card-title uncommon">Cloak of Protection</span>
+                                                    <span class="item-card-rarity">Wondrous Item, Uncommon (Attunement)</span>
+                                                </div>
+                                                <div class="item-card-actions">
+                                                    <span class="item-weight">—</span>
+                                                </div>
+                                            </div>
+                                            <div class="item-card-desc">
+                                                <p><strong>Hiệu ứng:</strong> Nhận **+1 AC** và **+1 vào tất cả các Saving Throws** khi đang mặc áo choàng này (đã được cộng trực tiếp vào bảng chỉ số).</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- +1 Armor Half Plate -->
+                                        <div class="interactive-item-card" id="item-armor">
+                                            <div class="item-card-top">
+                                                <div class="item-card-title-block">
+                                                    <span class="item-card-title rare">+1 Armor (Half Plate Enchanted)</span>
+                                                    <span class="item-card-rarity">Medium Armor, Rare (Enchanted)</span>
+                                                </div>
+                                                <div class="item-card-actions">
+                                                    <span class="item-weight">40 lbs</span>
+                                                </div>
+                                            </div>
+                                            <div class="item-card-desc">
+                                                <p><strong>Hiệu ứng:</strong> Giáp Half Plate đặc chế ma pháp. AC cơ bản = 15 + DEX modifier (tối đa +2) + 1 enchantment = 18 AC. Cộng thêm +1 từ Cloak of Protection thành **19 AC** tổng cộng.</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Shapeshifter Mask -->
+                                        <div class="interactive-item-card" id="item-mask">
+                                            <div class="item-card-top">
+                                                <div class="item-card-title-block">
+                                                    <span class="item-card-title uncommon">Shapeshifter Mask</span>
+                                                    <span class="item-card-rarity">Wondrous Item, Uncommon (Attunement)</span>
+                                                </div>
+                                                <div class="item-card-actions">
+                                                    <span class="item-weight">—</span>
+                                                </div>
+                                            </div>
+                                            <div class="item-card-desc">
+                                                <p><strong>Veil of False Skin (2/Long Rest):</strong> Dùng 1 Action thi triển phép *Disguise Self* thay đổi ngoại hình (kéo dài 1 giờ, không cần tập trung Concentration).</p>
+                                                <p><strong>Surface Echo (1/Short Rest):</strong> Dùng 1 Bonus Action đọc ý nghĩ bề mặt của một sinh vật trong 30 ft có INT ≥ 6 (kéo dài 1 round). Target cảm nhận được có sự xâm nhập nhẹ.</p>
+                                                <p><strong>Lời nguyền Dấu Ấn Linh Hồn:</strong> Khi rơi xuống 0 HP, phải roll Wisdom Save DC 13. Thất bại mặt nạ sẽ đổi khuôn mặt bạn ngẫu nhiên vĩnh viễn (chỉ gỡ được bằng phép Remove Curse).</p>
+                                                <div style="margin-top:8px;">
+                                                    <button class="btn-item-action" id="btn-use-mask-disguise">Dùng Disguise Self</button>
+                                                    <button class="btn-item-action" id="btn-use-mask-thoughts">Dùng Surface Echo</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Demon Hunter Kimono -->
+                                        <div class="interactive-item-card" id="item-kimono">
+                                            <div class="item-card-top">
+                                                <div class="item-card-title-block">
+                                                    <span class="item-card-title rare">Demon Hunter Kimono</span>
+                                                    <span class="item-card-rarity">Wondrous Item, Rare (Attunement)</span>
+                                                </div>
+                                                <div class="item-card-actions">
+                                                    <span class="item-weight">—</span>
+                                                </div>
+                                            </div>
+                                            <div class="item-card-desc">
+                                                <p><strong>Fiendbreaker Mantle:</strong> Có Advantage trên các cứu nạn chống lại trạng thái bị Charmed hoặc Frightened gây ra bởi loài quỷ Fiend.</p>
+                                                <p><strong>Command Word: Repel (Vô hạn dùng, Bonus Action):</strong> Chọn mục tiêu trong Cone 30 ft, yêu cầu Wisdom Save DC 15. Thất bại sẽ bị **Frightened** bởi bạn trong 1 phút. Quỷ Fiend bị Disadvantage khi Save, và Speed bị giảm còn 0 ở lượt đầu tiên.</p>
+                                                <p><strong>Command Word: Hunt (1/Long Rest, Bonus Action):</strong> Chỉ dùng khi có kẻ thù đang bị Frightened bởi bạn. Dịch chuyển 30 ft đến cạnh nó, đòn chém đầu tiên gây thêm **2d6 Radiant damage**. Sau khi dùng roll d6: ra 1 hoặc 2 thì không dùng được nữa cho đến bình minh.</p>
+                                                <div style="margin-top:8px;">
+                                                    <button class="btn-item-action" id="btn-use-kimono-repel">Dùng Word: Repel (Fear)</button>
+                                                    <button class="btn-item-action" id="btn-use-kimono-hunt">Dùng Word: Hunt (Teleport +2d6 Radiant)</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 3: BỘ PHÉP CHUẨN BỊ -->
+                        <div class="tab-pane" id="tab-pane-spells">
+                            <div class="spells-header-row">
+                                <div class="spells-header-stat">
+                                    <span class="spells-header-stat-label">Spell DC</span>
+                                    <span class="spells-header-stat-val">15</span>
+                                </div>
+                                <div class="spells-header-stat">
+                                    <span class="spells-header-stat-label">Spell Attack</span>
+                                    <span class="spells-header-stat-val">+9</span>
+                                </div>
+                                <div class="spells-header-stat">
+                                    <span class="spells-header-stat-label">Pact Slots (Bậc 4)</span>
+                                    <span class="spells-header-stat-val" id="spells-pact-slots-display">2 / 2</span>
+                                </div>
+                                <div class="spells-header-stat">
+                                    <span class="spells-header-stat-label">Spell Focus</span>
+                                    <span class="spells-header-stat-val">Mortal Wrath (+2)</span>
+                                </div>
+                            </div>
+
+                            <div class="spells-tab-grid">
+                                
+                                <!-- Booming Blade -->
+                                <div class="spell-panel-card cantrip" id="spell-booming-blade">
+                                    <div class="spell-card-header">
+                                        <div class="spell-title-block">
+                                            <span class="spell-card-name">Booming Blade</span>
+                                            <span class="spell-card-meta">Evocation Cantrip | Wizard/Warlock</span>
+                                        </div>
+                                        <span class="spell-card-level-badge">Cantrip</span>
+                                    </div>
+                                    <div class="spell-quick-specs">
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Cast:</span> 1 Act</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Range:</span> Melee (5ft)</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Dur:</span> 1 round</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Comp:</span> S, M</div>
+                                    </div>
+                                    <div class="spell-card-details">
+                                        <p><strong>Hiệu ứng:</strong> Chém cận chiến vũ khí. Trúng gây thêm **1d8 Thunder damage**. Đồng thời bọc lôi điện lên mục tiêu; nếu mục tiêu di chuyển ngoài ý muốn quá 5ft trước đầu lượt tiếp theo của bạn, nó nhận thêm **2d8 Thunder damage**.</p>
+                                        <button class="btn-cast-spell-action" data-spell="Booming Blade">Roll Phép (1d8 Thunder)</button>
+                                    </div>
+                                </div>
+
+                                <!-- Eldritch Blast -->
+                                <div class="spell-panel-card cantrip" id="spell-eldritch-blast">
+                                    <div class="spell-card-header">
+                                        <div class="spell-title-block">
+                                            <span class="spell-card-name">Eldritch Blast</span>
+                                            <span class="spell-card-meta">Evocation Cantrip | Warlock Classic</span>
+                                        </div>
+                                        <span class="spell-card-level-badge">Cantrip</span>
+                                    </div>
+                                    <div class="spell-quick-specs">
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Cast:</span> 1 Act</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Range:</span> 120 feet</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Dur:</span> Instant</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Comp:</span> V, S</div>
+                                    </div>
+                                    <div class="spell-card-details">
+                                        <p><strong>Hiệu ứng:</strong> Bắn ra **2 luồng tia năng lượng** (2 beams). Mỗi beam roll công kích riêng lẻ: Trúng gây **1d10 + 4 Force damage** (Đã cộng +4 CHA mod từ Agonizing Blast).</p>
+                                        <button class="btn-cast-spell-action" data-spell="Eldritch Blast">Bắn Blast (2 tia, 1d10+4)</button>
+                                    </div>
+                                </div>
+
+                                <!-- Chill Touch -->
+                                <div class="spell-panel-card cantrip" id="spell-chill-touch">
+                                    <div class="spell-card-header">
+                                        <div class="spell-title-block">
+                                            <span class="spell-card-name">Chill Touch</span>
+                                            <span class="spell-card-meta">Necromancy Cantrip | Ranged Touch</span>
+                                        </div>
+                                        <span class="spell-card-level-badge">Cantrip</span>
+                                    </div>
+                                    <div class="spell-quick-specs">
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Cast:</span> 1 Act</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Range:</span> 120 feet</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Dur:</span> 1 round</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Comp:</span> V, S</div>
+                                    </div>
+                                    <div class="spell-card-details">
+                                        <p><strong>Hiệu ứng:</strong> Tấn công ma pháp tầm xa. Gây **2d10 Necrotic damage** và mục tiêu **không thể hồi HP** cho đến cuối lượt sau của bạn. Undead trúng đòn còn bị Disadvantage trên attack rolls chống lại bạn.</p>
+                                        <button class="btn-cast-spell-action" data-spell="Chill Touch">Bắn Chill Touch (2d10 Necrotic)</button>
+                                    </div>
+                                </div>
+
+                                <!-- Shield -->
+                                <div class="spell-panel-card" id="spell-shield">
+                                    <div class="spell-card-header">
+                                        <div class="spell-title-block">
+                                            <span class="spell-card-name">Shield</span>
+                                            <span class="spell-card-meta">Level 1 Abjuration | Hexblade Expanded</span>
+                                        </div>
+                                        <span class="spell-card-level-badge">Slots</span>
+                                    </div>
+                                    <div class="spell-quick-specs">
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Cast:</span> 1 React</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Range:</span> Self</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Dur:</span> 1 round</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Comp:</span> V, S</div>
+                                    </div>
+                                    <div class="spell-card-details">
+                                        <p><strong>Hiệu ứng:</strong> Kích hoạt khi bị hit. Tạo rào chắn tăng **+5 AC** chống lại đòn đánh và miễn nhiễm sát thương từ *Magic Missile* cho đến đầu lượt tiếp theo.</p>
+                                        <button class="btn-cast-spell-action" data-spell="Shield">Cast Phép Shield (+5 AC)</button>
+                                    </div>
+                                </div>
+
+                                <!-- False Life -->
+                                <div class="spell-panel-card" id="spell-false-life">
+                                    <div class="spell-card-header">
+                                        <div class="spell-title-block">
+                                            <span class="spell-card-name">False Life</span>
+                                            <span class="spell-card-meta">Necromancy | Fiendish Vigor (Free)</span>
+                                        </div>
+                                        <span class="spell-card-level-badge" style="background:rgba(46,204,113,0.1); border-color:rgba(46,204,113,0.3); color:var(--color-success)">MIỄN PHÍ</span>
+                                    </div>
+                                    <div class="spell-quick-specs">
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Cast:</span> 1 Act</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Range:</span> Self</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Dur:</span> Instant</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Slot:</span> Không tốn</div>
+                                    </div>
+                                    <div class="spell-card-details">
+                                        <p><strong>Hiệu ứng:</strong> Nhận <strong>23 THP</strong> tự động. Pact Magic quy định mọi spell cast ở Bậc 4 — Fiendish Vigor cho phép cast <em>không tốn slot</em> nhưng vẫn ở Bậc 4. False Life L4 max = 4 + 19 = <strong>23 THP</strong>.</p>
+                                        <div style="display:flex; gap:6px;">
+                                            <button class="btn-cast-spell-action" data-spell="False Life" style="font-size:0.65rem; background:rgba(46,204,113,0.1); border-color:rgba(46,204,113,0.3); color:var(--color-success)">Fiendish Vigor (+23 THP, Free)</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Dimension Door -->
+                                <div class="spell-panel-card" id="spell-dimension-door">
+                                    <div class="spell-card-header">
+                                        <div class="spell-title-block">
+                                            <span class="spell-card-name">Dimension Door</span>
+                                            <span class="spell-card-meta">Level 4 Conjuration | Teleportation</span>
+                                        </div>
+                                        <span class="spell-card-level-badge">Slots</span>
+                                    </div>
+                                    <div class="spell-quick-specs">
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Cast:</span> 1 Act</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Range:</span> 500 feet</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Dur:</span> Instant</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Comp:</span> V</div>
+                                    </div>
+                                    <div class="spell-card-details">
+                                        <p><strong>Hiệu ứng:</strong> Dịch chuyển tức thời bạn và 1 sinh vật tự nguyện đi cùng lên đến 500 ft đến một tọa độ có thể thấy hoặc mô tả được.</p>
+                                        <button class="btn-cast-spell-action" data-spell="Dimension Door">Cast Phép Dimension Door</button>
+                                    </div>
+                                </div>
+
+                                <!-- Darkness -->
+                                <div class="spell-panel-card" id="spell-darkness">
+                                    <div class="spell-card-header">
+                                        <div class="spell-title-block">
+                                            <span class="spell-card-name">Darkness</span>
+                                            <span class="spell-card-meta">Level 2 Evocation | Shadow Control</span>
+                                        </div>
+                                        <span class="spell-card-level-badge">Slots</span>
+                                    </div>
+                                    <div class="spell-quick-specs">
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Cast:</span> 1 Act</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Range:</span> 60 feet</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Dur:</span> Conc 10m</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Comp:</span> V, M</div>
+                                    </div>
+                                    <div class="spell-card-details">
+                                        <p><strong>Hiệu ứng:</strong> Tạo vùng bóng tối sphere bán kính 15ft. Darkvision thường không nhìn xuyên qua được. Triệt tiêu ánh sáng ma thuật từ spell bậc 2 trở xuống. Combo cực đỉnh với Devil's Sight để lấy Advantage.</p>
+                                        <button class="btn-cast-spell-action" data-spell="Darkness">Cast Phép Darkness</button>
+                                    </div>
+                                </div>
+
+                                <!-- Shining Smite -->
+                                <div class="spell-panel-card" id="spell-shining-smite">
+                                    <div class="spell-card-header">
+                                        <div class="spell-title-block">
+                                            <span class="spell-card-name">Shining Smite</span>
+                                            <span class="spell-card-meta">Level 2 Transmutation | Smite Weapon</span>
+                                        </div>
+                                        <span class="spell-card-level-badge">Slots</span>
+                                    </div>
+                                    <div class="spell-quick-specs">
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Cast:</span> 1 Bonus</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Range:</span> Self</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Dur:</span> Conc 1m</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Comp:</span> V</div>
+                                    </div>
+                                    <div class="spell-card-details">
+                                        <p><strong>Hiệu ứng:</strong> Khi chém trúng, gây thêm **4d6 Radiant damage** (upcast bậc 4). Mục tiêu phát sáng hào quang 5ft, mọi đòn đánh chống lại nó có Advantage, không thể Invisible.</p>
+                                        <button class="btn-cast-spell-action" data-spell="Shining Smite">Cast Shining Smite (+4d6 Radiant)</button>
+                                    </div>
+                                </div>
+
+                                <!-- Fly -->
+                                <div class="spell-panel-card" id="spell-fly">
+                                    <div class="spell-card-header">
+                                        <div class="spell-title-block">
+                                            <span class="spell-card-name">Fly</span>
+                                            <span class="spell-card-meta">Level 3 Transmutation | Flight Mobility</span>
+                                        </div>
+                                        <span class="spell-card-level-badge">Slots</span>
+                                    </div>
+                                    <div class="spell-quick-specs">
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Cast:</span> 1 Act</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Range:</span> Touch</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Dur:</span> Conc 10m</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Comp:</span> V, S, M</div>
+                                    </div>
+                                    <div class="spell-card-details">
+                                        <p><strong>Hiệu ứng:</strong> Cho phép bay với tốc độ Fly Speed 60 ft. Do cast ở bậc 4 nên có thể target cùng lúc **2 sinh vật** kề cận.</p>
+                                        <button class="btn-cast-spell-action" data-spell="Fly">Cast Phép Fly (2 mục tiêu)</button>
+                                    </div>
+                                </div>
+
+                                <!-- Counterspell -->
+                                <div class="spell-panel-card" id="spell-counterspell">
+                                    <div class="spell-card-header">
+                                        <div class="spell-title-block">
+                                            <span class="spell-card-name">Counterspell</span>
+                                            <span class="spell-card-meta">Level 3 Abjuration | Magic Intercept</span>
+                                        </div>
+                                        <span class="spell-card-level-badge">Slots</span>
+                                    </div>
+                                    <div class="spell-quick-specs">
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Cast:</span> 1 React</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Range:</span> 60 feet</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Dur:</span> Instant</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Comp:</span> S</div>
+                                    </div>
+                                    <div class="spell-card-details">
+                                        <p><strong>Hiệu ứng:</strong> Kích hoạt khi thấy địch đang niệm chú trong 60ft. Mục tiêu phải vượt qua Constitution Saving Throw DC 15; nếu tạch, spell của nó bị tiêu biến ngay lập tức.</p>
+                                        <button class="btn-cast-spell-action" data-spell="Counterspell">Cast Phép Counterspell</button>
+                                    </div>
+                                </div>
+
+                                <!-- Shadow of Moil -->
+                                <div class="spell-panel-card" id="spell-shadow-of-moil">
+                                    <div class="spell-card-header">
+                                        <div class="spell-title-block">
+                                            <span class="spell-card-name">Shadow of Moil</span>
+                                            <span class="spell-card-meta">Level 4 Necromancy | Shadow Shield</span>
+                                        </div>
+                                        <span class="spell-card-level-badge">Slots</span>
+                                    </div>
+                                    <div class="spell-quick-specs">
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Cast:</span> 1 Act</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Range:</span> Self</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Dur:</span> Conc 1m</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Comp:</span> V, S, M</div>
+                                    </div>
+                                    <div class="spell-card-details">
+                                        <p><strong>Hiệu ứng:</strong> Bóng tối lạnh lẽo bọc cơ thể bạn. Bạn trở thành Heavily Obscured (địch đánh bị Disadvantage, bạn đánh được Advantage). Nhận kháng cự (Resistance) sát thương Radiant. Bị đánh trúng cận chiến trong 10ft sẽ phản kích gây **2d8 Necrotic damage**.</p>
+                                        <button class="btn-cast-spell-action" data-spell="Shadow of Moil">Cast Shadow of Moil (Phản đòn 2d8)</button>
+                                    </div>
+                                </div>
+
+                                <!-- Revivify -->
+                                <div class="spell-panel-card" id="spell-revivify">
+                                    <div class="spell-card-header">
+                                        <div class="spell-title-block">
+                                            <span class="spell-card-name">Revivify (Đặc Biệt)</span>
+                                            <span class="spell-card-meta">Level 3 Necromancy | Resurrection</span>
+                                        </div>
+                                        <span class="spell-card-level-badge" style="background:rgba(46,204,113,0.1); border-color:rgba(46,204,113,0.3); color:var(--color-success)">Campaign</span>
+                                    </div>
+                                    <div class="spell-quick-specs">
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Cast:</span> 1 Act</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Range:</span> Touch</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Dur:</span> Instant</div>
+                                        <div class="spell-spec-item"><span class="spell-spec-label">Comp:</span> V, S, M</div>
+                                    </div>
+                                    <div class="spell-card-details">
+                                        <p><strong>Hiệu ứng:</strong> Phép hồi sinh nhận từ cốt truyện của DM (không tính vào giới hạn Prepared Spells). Hồi sinh sinh vật vừa chết trong vòng 1 phút, cứu nó trỗi dậy với 1 HP. Tiêu tốn Diamond trị giá 300+ GP.</p>
+                                        <button class="btn-cast-spell-action" data-spell="Revivify">Cast Phép Hồi Sinh Revivify</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- TAB 4: FEATURES & FEATS -->
+                        <div class="tab-pane" id="tab-pane-feats">
+                            <div class="tab-resources-block">
+                                <!-- Eldritch Invocations -->
+                                <div class="interactive-resources-panel glass-panel">
+                                    <h3 class="panel-title" style="margin-bottom:12px;">ELD RITCH INVOCATIONS ĐANG SỞ HỮU (Lv7 = 5 + 1 Feat)</h3>
+                                    <div class="feats-vertical-list">
+                                        
+                                        <div class="feat-panel-card">
+                                            <div class="feat-card-top">
+                                                <div class="feat-card-title-block">
+                                                    <span class="feat-card-title">Pact of the Blade (Khế ước Kiếm)</span>
+                                                    <span class="feat-card-source">PHB 2024 page 156</span>
+                                                </div>
+                                            </div>
+                                            <div class="feat-card-desc">
+                                                <p>Dùng Bonus Action triệu hồi/liên kết vũ khí. Được phép sử dụng Charisma (CHA) thay thế cho STR/DEX cho các đòn đánh to-hit và damage rolls. Vũ khí có thể chọn gây damage Slashing, Necrotic, Psychic, hoặc Radiant tùy chọn.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="feat-panel-card">
+                                            <div class="feat-card-top">
+                                                <div class="feat-card-title-block">
+                                                    <span class="feat-card-title">Agonizing Blast (Tia Đẩy Sức Hút)</span>
+                                                    <span class="feat-card-source">PHB 2024 page 155</span>
+                                                </div>
+                                            </div>
+                                            <div class="feat-card-desc">
+                                                <p>Được cộng thêm modifier Charisma (+4) trực tiếp vào lượng sát thương gây ra bởi cantrip Eldritch Blast (cho mỗi beam trúng).</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="feat-panel-card">
+                                            <div class="feat-card-top">
+                                                <div class="feat-card-title-block">
+                                                    <span class="feat-card-title">Devil's Sight (Bản Nhãn Ma Quỷ)</span>
+                                                    <span class="feat-card-source">PHB 2024 page 155</span>
+                                                </div>
+                                            </div>
+                                            <div class="feat-card-desc">
+                                                <p>Bạn có thể nhìn bình thường trong bóng tối thường lẫn bóng tối ma thuật (Magical Darkness) trong tầm xa 120 ft.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="feat-panel-card">
+                                            <div class="feat-card-top">
+                                                <div class="feat-card-title-block">
+                                                    <span class="feat-card-title">Fiendish Vigor (Sinh Lực Ma Quỷ)</span>
+                                                    <span class="feat-card-source">PHB 2024 page 155</span>
+                                                </div>
+                                            </div>
+                                            <div class="feat-card-desc">
+                                                <p>Bạn có thể thi triển phép <em>False Life</em> lên bản thân vô hạn lần mà <strong>không tốn spell slot</strong>. Khi cast theo cách này, tự động nhận số THP tối đa của die. Vì Pact Magic quy định mọi spell đều ở <strong>Bậc 4</strong>, Fiendish Vigor cast False Life Bậc 4, miễn phí = <strong>23 THP</strong> (max 1d4+19).</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="feat-panel-card">
+                                            <div class="feat-card-top">
+                                                <div class="feat-card-title-block">
+                                                    <span class="feat-card-title">Thirsting Blade (Khát Kiếm - Extra Attack)</span>
+                                                    <span class="feat-card-source">PHB 2024 page 157</span>
+                                                </div>
+                                            </div>
+                                            <div class="feat-card-desc">
+                                                <p>Cho phép bạn tấn công **2 lần** thay vì 1 lần bằng vũ khí Pact Weapon khi thực hiện Action Tấn Công (Attack Action) trong lượt.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="feat-panel-card">
+                                            <div class="feat-card-top">
+                                                <div class="feat-card-title-block">
+                                                    <span class="feat-card-title">Lessons of the First Ones</span>
+                                                    <span class="feat-card-source">PHB 2024 page 156</span>
+                                                </div>
+                                            </div>
+                                            <div class="feat-card-desc">
+                                                <p>Nhận 1 Origin Feat tùy chọn. Ragna nhận feat **Lords' Alliance Agent** (Inspiring Strike khi Crit tạo Heroic Inspiration cho đồng đội; Reassert Honor tạo Advantage khi đồng đội cạnh bên bị damage).</p>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <!-- Feats & Traits -->
+                                <div class="interactive-items-panel glass-panel">
+                                    <h3 class="panel-title" style="margin-bottom:12px;">FEATS & HOMEBREW TRAITS</h3>
+                                    <div class="feats-vertical-list">
+                                        
+                                        <div class="feat-panel-card">
+                                            <div class="feat-card-top">
+                                                <div class="feat-card-title-block">
+                                                    <span class="feat-card-title">Elven Accuracy (Chính Xác Của Tộc Tiên)</span>
+                                                    <span class="feat-card-source">Xanathar's Guide to Everything</span>
+                                                </div>
+                                            </div>
+                                            <div class="feat-card-desc">
+                                                <p>Khi có Advantage trên đòn tấn công sử dụng DEX, INT, WIS, hoặc CHA (áp dụng cho đòn đánh vũ khí pact weapon), bạn được phép **đổ 3 xúc xắc d20** (Triple Advantage) thay vì chỉ đổ 2 và chọn kết quả lớn nhất.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="feat-panel-card">
+                                            <div class="feat-card-top">
+                                                <div class="feat-card-title-block">
+                                                    <span class="feat-card-title homebrew">1. Seed of Life Burst</span>
+                                                    <span class="feat-card-source">Homebrew Trait</span>
+                                                </div>
+                                            </div>
+                                            <div class="feat-card-desc">
+                                                <p><strong>Life Pulse (1/Long Rest):</strong> Cast phép Life Burst bậc 2 miễn phí: hồi 1d8 HP + 2d8 THP cho mục tiêu, sau đó mỗi đầu round mục tiêu hồi thêm 1d4 HP kéo dài 1 phút.</p>
+                                                <p><strong>Stabilizing Bloom:</strong> Khi cast lên mục tiêu đang ở 0 HP: lập tức đứng dậy (không bị Prone), hồi HP bình thường và có Advantage trong các Saving Throw kế tiếp trong 1 round.</p>
+                                                <div style="margin-top:8px;">
+                                                    <button class="btn-item-action" id="btn-use-feat-seed">Kích hoạt Life Pulse</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="feat-panel-card">
+                                            <div class="feat-card-top">
+                                                <div class="feat-card-title-block">
+                                                    <span class="feat-card-title homebrew">2. Fractured Form</span>
+                                                    <span class="feat-card-source">Homebrew Trait</span>
+                                                </div>
+                                            </div>
+                                            <div class="feat-card-desc">
+                                                <p><strong>Echoing Movement:</strong> Các Opportunity Attacks chống lại bạn đều bị Disadvantage.</p>
+                                                <p><strong>Graspless (3/Long Rest):</strong> Nhận Advantage trong các cú roll để trốn thoát trói buộc (Grapple/Restraints).</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="feat-panel-card">
+                                            <div class="feat-card-top">
+                                                <div class="feat-card-title-block">
+                                                    <span class="feat-card-title homebrew">3. Leader Inspiration (Hào Khí Dẫn Đầu)</span>
+                                                    <span class="feat-card-source">Homebrew Trait</span>
+                                                </div>
+                                            </div>
+                                            <div class="feat-card-desc">
+                                                <p>Khi bàn kế hoạch trước trận đấu (ít nhất 10 phút): Bạn + 4 sinh vật đồng đội nhận **10 THP (Temp HP)**. Mỗi round tự động hồi lại 10 THP này. Duy trì số round = CHA modifier (+4 rounds).</p>
+                                                <div style="margin-top:8px;">
+                                                    <button class="btn-item-action" id="btn-use-feat-leader">Kích hoạt Hào Khí</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="feat-panel-card">
+                                            <div class="feat-card-top">
+                                                <div class="feat-card-title-block">
+                                                    <span class="feat-card-title homebrew">4. Additional Attack (Đòn Đánh Phụ Chí Mạng)</span>
+                                                    <span class="feat-card-source">Homebrew Trait</span>
+                                                </div>
+                                            </div>
+                                            <div class="feat-card-desc">
+                                                <p>Được thực hiện thêm **1 đòn tấn công phụ** (1 additional attack, không phải Extra Attack) sau khi thực hiện Attack Action, dùng **1 lần mỗi round**.</p>
+                                                <p>Đòn chém này tự động có **Advantage**, và nếu trúng đích thì tự động tính là **Critical Hit (Chí Mạng)**. Kết hợp hoàn hảo với Mortal Wrath vì đòn Crit không reset stack.</p>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+    </main>
+
+    <!-- ==========================================
+         POP-UP TRÌNH TUNG XÚC XẮC (DICE ROLLER MODAL)
+         ========================================== -->
+    <div class="dice-modal-overlay" id="dice-modal-overlay">
+        <div class="dice-modal glass-panel" id="dice-modal">
+            
+            <button class="btn-close-modal" id="btn-close-dice-modal">&times;</button>
+            
+            <div class="dice-roll-info">
+                <div class="dice-roll-title" id="dice-roll-title">Đang tung xúc xắc...</div>
+                <div class="dice-roll-subtitle" id="dice-roll-subtitle">GREATSWORD ATTACK</div>
+            </div>
+
+            <!-- Khu vực đồ họa xúc xắc quay (Dice animation wrapper) -->
+            <div class="dice-graphic-container">
+                <div class="dice-d20-visual" id="dice-visual">
+                    <!-- SVG d20 hoặc CSS 3D dice -->
+                    <svg viewBox="0 0 100 100" class="d20-svg">
+                        <polygon points="50,5 95,30 95,70 50,95 5,70 5,30" fill="rgba(20,20,20,0.8)" stroke="#ff6f2a" stroke-width="2"/>
+                        <!-- Top triangle -->
+                        <polygon points="50,5 25,40 75,40" fill="rgba(255,111,42,0.15)" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <!-- Other panels -->
+                        <polygon points="5,30 25,40 50,5" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="95,30 75,40 50,5" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="5,30 25,40 5,70" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="95,30 75,40 95,70" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        
+                        <polygon points="25,40 50,95 5,70" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="75,40 50,95 95,70" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="25,40 75,40 50,95" fill="rgba(255,111,42,0.05)" stroke="#ff6f2a" stroke-width="1.5"/>
+                        
+                        <!-- Number Display in Center -->
+                        <text x="50" y="58" font-family="'Cinzel', serif" font-weight="bold" font-size="22" fill="#ffffff" text-anchor="middle" id="dice-number-text">20</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Kết quả tính toán chi tiết -->
+            <div class="dice-results-block">
+                <div class="dice-formula" id="dice-calc-formula">Đổ: 1d20 + 9</div>
+                <div class="dice-calculation" id="dice-calc-details">
+                    <span class="calc-part die-result" id="dice-calc-die">14</span>
+                    <span class="calc-operator">+</span>
+                    <span class="calc-part modifier-value" id="dice-calc-mod">9</span>
+                </div>
+                <div class="dice-total-display" id="dice-total-display">23</div>
+                <div class="dice-crit-alert" id="dice-crit-text">TRÚNG!</div>
+            </div>
+
+            <button class="btn-dismiss-roll" id="btn-dismiss-roll">ĐỒNG Ý</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         GSAP & Lenis CDN
+         ═══════════════════════════════════════════ -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+
+    <!-- Custom Logic Script -->
+    <script src="assets/js/character-sheet.js"></script>
+</body>
+</html>

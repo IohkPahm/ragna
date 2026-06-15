@@ -674,6 +674,284 @@
 
         customElements.define("burn-transition", BurnTransition);
 
+        // Shaders & WebGL Component for Framer Burn Effect
+        const framerFragmentShaderSource = `
+          precision highp float;
+
+          varying vec2 vUv;
+          uniform vec4 uEdgeColor;
+          uniform vec4 uMaskColor;
+          uniform float uNoiseScale;
+          uniform float uNoiseIntensity;
+          uniform float uTime;
+          uniform float uProgress; // uBurn
+          uniform float uDensity;
+          uniform float uSoftness;
+          uniform float uDistortion;
+          uniform float uAspect;
+
+          // Pseudo-random function
+          float random(vec2 st) {
+              return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+          }
+
+          // 2D noise function
+          vec2 hash(vec2 p) {
+              p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+              return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
+          }
+
+          float noise(vec2 p) {
+              const float K1 = 0.366025404;
+              const float K2 = 0.211324865;
+              
+              vec2 i = floor(p + (p.x + p.y) * K1);
+              vec2 a = p - i + (i.x + i.y) * K2;
+              vec2 o = (a.x > a.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+              vec2 b = a - o + K2;
+              vec2 c = a - 1.0 + 2.0 * K2;
+              
+              vec3 h = max(0.5 - vec3(dot(a, a), dot(b, b), dot(c, c)), 0.0);
+              vec3 n = h * h * h * h * vec3(dot(a, hash(i + 0.0)), dot(b, hash(i + o)), dot(c, hash(i + 1.0)));
+              
+              return dot(n, vec3(70.0));
+          }
+
+          vec3 sRGBToLinear(vec3 color) {
+              return pow(color, vec3(2.2));
+          }
+
+          vec3 linearTosRGB(vec3 color) {
+              return pow(color, vec3(1.0 / 2.2));
+          }
+
+          void main() {
+              // 1. Calculate distorted coordinates
+              vec2 centeredCoord = vUv * 2.0 - 1.0;
+              float distanceToCenter = length(centeredCoord);
+              
+              // Radial distortion
+              float radialDistortion = uDistortion * 0.3 * distanceToCenter;
+              
+              // Wave distortion
+              float waveFrequency = 3.0 + uDistortion * 2.0;
+              float waveAmplitude = 0.08 * abs(uDistortion);
+              float sineDistortion = sin(centeredCoord.y * waveFrequency + centeredCoord.x * 1.5) *
+                                    waveAmplitude *
+                                    (1.0 - distanceToCenter * 0.7);
+                                    
+              vec2 distortionVector = normalize(centeredCoord) * radialDistortion;
+              distortionVector.x += sineDistortion;
+              distortionVector.y += sineDistortion * 0.5;
+              
+              vec2 finalCoord = (centeredCoord + distortionVector) * 0.5 + 0.5;
+              finalCoord = clamp(finalCoord, 0.0, 1.0);
+
+              // 2. Calculate burning edge (burnEdge)
+              float dist = distance(finalCoord, vec2(0.5, 0.5));
+              // uDensity determines noise frequency
+              float noiseFactor = noise(vUv * 10.0 * uDensity) * 0.2;
+              // uProgress determines burn threshold
+              float burnThreshold = max(0.0, min(1.0, uProgress + uProgress * 0.1 + noiseFactor));
+              
+              // uSoftness controls edge width
+              float edgeWidth = max(0.005, uSoftness * 0.06);
+              float innerEdge = burnThreshold;
+              float outerEdge = burnThreshold + edgeWidth;
+              float burnEdge = smoothstep(innerEdge, outerEdge, dist);
+              
+              // Standard mask: burnEdge = 1.0 - burnEdge so center is solid (burned/black), edges are transparent
+              burnEdge = 1.0 - burnEdge;
+
+              // 3. Color blending (solid black mask color)
+              vec4 edgeColorWithAlpha = uEdgeColor;
+              edgeColorWithAlpha.rgb = sRGBToLinear(edgeColorWithAlpha.rgb);
+              
+              vec4 texColor = uMaskColor; // black color
+              texColor.rgb = sRGBToLinear(texColor.rgb);
+              
+              // Calculate glow at the edge
+              float distToEdge = abs(dist - innerEdge);
+              float glow = smoothstep(edgeWidth * 1.8, 0.0, distToEdge) * 2.5;
+              vec3 glowColor = edgeColorWithAlpha.rgb * glow;
+              
+              vec3 finalColor = mix(edgeColorWithAlpha.rgb, texColor.rgb, burnEdge) + glowColor;
+              float maskAlpha = max(burnEdge, glow * 0.8);
+              
+              if (maskAlpha < 0.01) {
+                  discard;
+              }
+              finalColor = linearTosRGB(finalColor);
+              gl_FragColor = vec4(finalColor, maskAlpha);
+          }
+        `;
+
+        class FramerBurnTransition extends HTMLElement {
+          static observedAttributes = [
+            "burn",
+            "density",
+            "distortion",
+            "edge-color",
+            "mask-color",
+            "softness"
+          ];
+
+          constructor() {
+            super();
+            this.attachShadow({ mode: "open" });
+            this.canvas = document.createElement("canvas");
+            this.shadowRoot.innerHTML = `
+              <style>
+                :host {
+                  display: block;
+                  position: relative;
+                  overflow: hidden;
+                  contain: content;
+                }
+
+                canvas {
+                  display: block;
+                  width: 100%;
+                  height: 100%;
+                }
+              </style>
+            `;
+            this.shadowRoot.append(this.canvas);
+            this.burn = 0.0;
+            this.density = 0.5;
+            this.distortion = 0.0;
+            this.softness = 0.5;
+            this.edgeColor = "#ff6f2a";
+            this.maskColor = "#000000";
+            this.resize = this.resize.bind(this);
+          }
+
+          connectedCallback() {
+            this.init();
+            this.resizeObserver = new ResizeObserver(this.resize);
+            this.resizeObserver.observe(this);
+            this.readAttributes();
+            this.render();
+          }
+
+          disconnectedCallback() {
+            this.resizeObserver?.disconnect();
+            if (this.gl) {
+              this.gl.deleteBuffer(this.buffer);
+              this.gl.deleteProgram(this.program);
+            }
+            this.gl = null;
+            this.program = null;
+          }
+
+          attributeChangedCallback() {
+            this.readAttributes();
+            this.render();
+          }
+
+          readAttributes() {
+            if (this.hasAttribute("burn")) {
+              this.burn = clamp(Number(this.getAttribute("burn")), 0.0, 1.0);
+            }
+            if (this.hasAttribute("density")) {
+              this.density = clamp(Number(this.getAttribute("density")), 0.0, 1.0);
+            }
+            if (this.hasAttribute("distortion")) {
+              this.distortion = clamp(Number(this.getAttribute("distortion")), -1.0, 1.0);
+            }
+            if (this.hasAttribute("softness")) {
+              this.softness = clamp(Number(this.getAttribute("softness")), 0.0, 1.0);
+            }
+            if (this.hasAttribute("edge-color")) {
+              this.edgeColor = this.getAttribute("edge-color");
+            }
+            if (this.hasAttribute("mask-color")) {
+              this.maskColor = this.getAttribute("mask-color");
+            }
+          }
+
+          init() {
+            this.gl = this.canvas.getContext("webgl", { alpha: true, premultipliedAlpha: false, antialias: true });
+            if (!this.gl) return;
+            this.program = createProgram(this.gl, vertexShaderSource, framerFragmentShaderSource);
+            this.gl.useProgram(this.program);
+            this.locations = {
+              position: this.gl.getAttribLocation(this.program, "aPosition"),
+              edgeColor: this.gl.getUniformLocation(this.program, "uEdgeColor"),
+              maskColor: this.gl.getUniformLocation(this.program, "uMaskColor"),
+              noiseScale: this.gl.getUniformLocation(this.program, "uNoiseScale"),
+              noiseIntensity: this.gl.getUniformLocation(this.program, "uNoiseIntensity"),
+              time: this.gl.getUniformLocation(this.program, "uTime"),
+              progress: this.gl.getUniformLocation(this.program, "uProgress"),
+              density: this.gl.getUniformLocation(this.program, "uDensity"),
+              softness: this.gl.getUniformLocation(this.program, "uSoftness"),
+              distortion: this.gl.getUniformLocation(this.program, "uDistortion"),
+              aspect: this.gl.getUniformLocation(this.program, "uAspect")
+            };
+            const vertices = new Float32Array([
+              -1, -1,
+              1, -1,
+              -1, 1,
+              -1, 1,
+              1, -1,
+              1, 1
+            ]);
+            this.buffer = this.gl.createBuffer();
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+            this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
+            this.gl.enableVertexAttribArray(this.locations.position);
+            this.gl.vertexAttribPointer(this.locations.position, 2, this.gl.FLOAT, false, 0, 0);
+          }
+
+          resize() {
+            if (!this.gl) return;
+            const rect = this.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const width = Math.max(1, Math.floor(rect.width * dpr));
+            const height = Math.max(1, Math.floor(rect.height * dpr));
+            if (this.canvas.width !== width || this.canvas.height !== height) {
+              this.canvas.width = width;
+              this.canvas.height = height;
+            }
+            this.gl.viewport(0, 0, width, height);
+            this.render();
+          }
+
+          render() {
+            if (!this.gl || !this.program) return;
+            const gl = this.gl;
+            const rect = this.getBoundingClientRect();
+            
+            const parsedEdge = parseHexColor(this.edgeColor, [1, 0.44, 0.16]);
+            const edgeAlpha = 1.0;
+            const parsedMask = parseHexColor(this.maskColor, [0, 0, 0]);
+            const maskAlpha = 1.0;
+
+            gl.useProgram(this.program);
+            gl.clearColor(0, 0, 0, 0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            
+            const timeValue = (window.scrollY || window.pageYOffset || 0) * 0.002;
+            
+            gl.uniform4f(this.locations.edgeColor, parsedEdge[0], parsedEdge[1], parsedEdge[2], edgeAlpha);
+            gl.uniform4f(this.locations.maskColor, parsedMask[0], parsedMask[1], parsedMask[2], maskAlpha);
+            gl.uniform1f(this.locations.noiseScale, 0.37);
+            gl.uniform1f(this.locations.noiseIntensity, 0.3);
+            gl.uniform1f(this.locations.time, timeValue);
+            gl.uniform1f(this.locations.progress, this.burn);
+            gl.uniform1f(this.locations.density, this.density);
+            gl.uniform1f(this.locations.softness, this.softness);
+            gl.uniform1f(this.locations.distortion, this.distortion);
+            gl.uniform1f(this.locations.aspect, rect.height > 0 ? rect.width / rect.height : 1);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+          }
+        }
+
+        customElements.define("framer-burn-transition", FramerBurnTransition);
+
         // ═══════════════════════════════════════
         // IMAGE LOADING & TEXTURE SETUP
         // ═══════════════════════════════════════
@@ -715,6 +993,8 @@
                 logDebug("Lỗi tải ảnh chuyển cảnh: " + err.message);
                 console.error("Lỗi khi tải ảnh hiệu ứng chuyển cảnh:", err);
             });
+
+
 
         // ═══════════════════════════════════════
         // GSAP MASTER TIMELINE
@@ -790,12 +1070,12 @@
             scrollTrigger: {
                 trigger: '.animation-wrapper',
                 start: 'top top',
-                end: '+=2250%', // Tăng thêm 750% cho phần sau INTRO (tổng cộng 150% scroll)
+                end: '+=2850%', // Tăng thêm cho phần đường line AnimatedLine (tổng cộng 190% scroll)
                 pin: true,
                 scrub: true, // Trỏ 1:1 theo thanh cuộn (đã được làm mượt bởi Lenis)
                 anticipatePin: 1,
                 onUpdate: self => {
-                    const pct = Math.round(self.progress * 150);
+                    const pct = Math.round(self.progress * 190);
                     if (scrollPctEl) {
                         scrollPctEl.textContent = String(pct).padStart(2, '0') + '%';
                     }
@@ -987,8 +1267,29 @@
               }, start);
         });
 
-        // Giữ ảnh nhân vật under-char luôn hiện với opacity 1 từ mốc 101% đến 150%
+        // Giữ ảnh nhân vật under-char luôn hiện với opacity 1 từ mốc 101% đến 180%
         tl.set('.under-char-layer', {
             opacity: 1
-        }, 101)
-          .to({}, { duration: 0.1 }, 150);
+        }, 101);
+
+        // HỒI 5: HIỆU ỨNG THIÊU RỤI TRÒN TỪ TÂM (FRAMER BURN EFFECT) (150 – 180)
+        tl.addLabel('framer-burn', 150)
+          .set('#page-burn-overlay', {
+              opacity: 1
+          }, 'framer-burn')
+          .to('#page-burn-overlay', {
+              attr: { burn: 1.0 },
+              duration: 30, // cháy dần từ 150% đến 180%
+              ease: 'power1.in'
+          }, 'framer-burn')
+          .to('#page-burn-overlay', {
+              attr: { distortion: 0.35 },
+              duration: 25, // tăng độ méo hình sóng từ 150% đến 175%
+              ease: 'power1.out'
+          }, 'framer-burn')
+          .to('#animated-line', {
+              scaleX: 1,
+              duration: 10, // Chạy từ mốc 180 đến 190
+              ease: 'power2.inOut' // Mượt mà tương tự ease của Framer: [0.25, 0.1, 0.25, 1]
+          }, 180)
+          .to({}, { duration: 0.1 }, 190); // Giữ trạng thái hiển thị hoàn chỉnh đến mốc 190

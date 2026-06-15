@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Char D&D</title>
-    <link rel="stylesheet" href="style.css?v=3.2">
+    <link rel="stylesheet" href="assets/css/style.css?v=3.2">
 </head>
 <body>
 
@@ -199,6 +199,22 @@
                 <img src="assets/images/under-char.webp" class="under-char-img" alt="Under Character">
             </div>
 
+            <!-- Lớp Burn toàn trang từ giữa (z-index: 10, ban đầu ẩn) -->
+            <framer-burn-transition
+                id="page-burn-overlay"
+                burn="0.0"
+                density="0.5"
+                distortion="0.0"
+                edge-color="#ff6f2a"
+                softness="0.5"
+                dispersion="1.0"
+            ></framer-burn-transition>
+
+            <!-- Đường line hoạt ảnh (z-index: 12, ban đầu ẩn scaleX(0)) -->
+            <div class="animated-line-container">
+                <div id="animated-line" class="animated-line"></div>
+            </div>
+
         </div>
     </div>
 
@@ -210,7 +226,7 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 
-    <script src="script.js?v=2.5"></script>
+    <script src="assets/js/script.js?v=2.5"></script>
 
 </body>
 </html>

@@ -23,3 +23,9 @@ begin169.png
 
 # Chrome remote debugging profile
 .chrome-profile/
+.chrome-profile-combat/
+.chrome-profile-index/
+.chrome-profile*/
+
+# Node modules
+node_modules/

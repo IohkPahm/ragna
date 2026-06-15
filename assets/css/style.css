@@ -16,43 +16,43 @@
            ═══════════════════════════════════ */
         @font-face {
             font-family: 'TrajanProLight';
-            src: url('fonts/TrajanPro3Light.otf') format('opentype');
+            src: url('../fonts/TrajanPro3Light.otf') format('opentype');
             font-weight: normal;
             font-style: normal;
         }
         @font-face {
             font-family: 'Cinzel';
-            src: url('fonts/Cinzel-Regular.ttf') format('truetype');
+            src: url('../fonts/Cinzel-Regular.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
         @font-face {
             font-family: 'CinzelDecorative';
-            src: url('fonts/CinzelDecorative-Regular.ttf') format('truetype');
+            src: url('../fonts/CinzelDecorative-Regular.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
         @font-face {
             font-family: 'MaverickGrotesk';
-            src: url('fonts/MRCHMaverickGrotesk-BlackItalic-SVG.otf') format('opentype');
+            src: url('../fonts/MRCHMaverickGrotesk-BlackItalic-SVG.otf') format('opentype');
             font-weight: normal;
             font-style: normal;
         }
         @font-face {
             font-family: 'Cinzel';
-            src: url('fonts/Cinzel-Bold.ttf') format('truetype');
+            src: url('../fonts/Cinzel-Bold.ttf') format('truetype');
             font-weight: bold;
             font-style: normal;
         }
         @font-face {
             font-family: 'Avenir';
-            src: url('fonts/Avenir-Regular.ttf') format('truetype');
+            src: url('../fonts/Avenir-Regular.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
         @font-face {
             font-family: 'Avenir';
-            src: url('fonts/Avenir-Bold.ttf') format('truetype');
+            src: url('../fonts/Avenir-Bold.ttf') format('truetype');
             font-weight: bold;
             font-style: normal;
         }
@@ -90,7 +90,7 @@
         .shared-bg {
             position: absolute;
             inset: 0;
-            background-image: url('assets/images/background.webp');
+            background-image: url('../images/background.webp');
             background-repeat: no-repeat;
             background-position: center;
             background-size: 130% 130%;
@@ -287,6 +287,41 @@
             z-index: 5;
             pointer-events: none;
             opacity: 0;
+        }
+
+        framer-burn-transition {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        /* ═══════════════════════════════════
+           ANIMATED LINE (Hiệu ứng đường line)
+           ═══════════════════════════════════ */
+        .animated-line-container {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 12;
+            pointer-events: none;
+            padding: 0 10%; /* Có lề trái phải 10% để đường line nằm đẹp ở giữa màn hình */
+            box-sizing: border-box;
+        }
+
+        .animated-line {
+            width: 100%;
+            height: 4px;
+            background-color: #ffffff;
+            transform: scaleX(0);
+            transform-origin: left center;
+            will-change: transform;
+            /* Hiệu ứng phát sáng màu trắng óng ánh lấp lánh (glow) */
+            box-shadow: 0 0 8px 1px rgba(255, 255, 255, 0.8),
+                        0 0 16px 3px rgba(255, 255, 255, 0.4);
         }
 
         .under-layer {
