@@ -57,9 +57,9 @@
                     <div class="combat-hp-control">
                         <div class="hp-tracker-header">
                             <div class="hp-main-values">
-                                <span class="hp-current" id="combat-current-hp">54</span>
+                                <span class="hp-current" id="combat-current-hp">61</span>
                                 <span class="hp-divider">/</span>
-                                <span class="hp-max">54</span>
+                                <span class="hp-max" id="combat-max-hp">61</span>
                                 <span class="hp-temp-label" id="temp-hp-display" style="display:none;">(+<span id="combat-temp-hp">0</span> Temp)</span>
                             </div>
                             <div class="hp-label">SỨC KHỎE (HIT POINTS)</div>
@@ -103,7 +103,7 @@
                     <div class="combat-calculator-panel glass-panel">
                         <div class="calculator-header">
                             <h2 class="panel-title">QUẢN LÝ LƯỢT ĐI & BỘ TÍNH SÁT THƯƠNG</h2>
-                            <button class="btn-reset-turn" id="btn-reset-turn">RESET LƯỢT ĐI</button>
+                            <button class="btn-reset-turn" id="btn-reset-turn">NEXT TURN</button>
                         </div>
 
                         <!-- 4 Hành động chính của lượt đi (khung to, nổi bật) -->
@@ -237,11 +237,11 @@
                                                         </label>
                                                         <label class="addon-checkbox">
                                                             <input type="checkbox" class="chk-strike-addon" data-strike="1" data-addon="curse" value="3">
-                                                            <span class="addon-name">Curse (+3)</span>
+                                                            <span class="addon-name">HB's Curse (+3)</span>
                                                         </label>
                                                         <label class="addon-checkbox">
                                                             <input type="checkbox" class="chk-strike-addon" data-strike="1" data-addon="smite" value="4d6">
-                                                            <span class="addon-name">Smite (+4d6)</span>
+                                                            <span class="addon-name">Shining Smite (+4d6)</span>
                                                         </label>
                                                     </div>
                                                     <button class="btn-roll-single-dmg" data-strike="1" id="btn-roll-single-1">Roll Lẻ</button>
@@ -269,11 +269,11 @@
                                                         </label>
                                                         <label class="addon-checkbox">
                                                             <input type="checkbox" class="chk-strike-addon" data-strike="2" data-addon="curse" value="3">
-                                                            <span class="addon-name">Curse (+3)</span>
+                                                            <span class="addon-name">HB's Curse (+3)</span>
                                                         </label>
                                                         <label class="addon-checkbox">
                                                             <input type="checkbox" class="chk-strike-addon" data-strike="2" data-addon="smite" value="4d6">
-                                                            <span class="addon-name">Smite (+4d6)</span>
+                                                            <span class="addon-name">Shining Smite (+4d6)</span>
                                                         </label>
                                                     </div>
                                                     <button class="btn-roll-single-dmg" data-strike="2" id="btn-roll-single-2">Roll Lẻ</button>
@@ -304,11 +304,11 @@
                                                         </label>
                                                         <label class="addon-checkbox">
                                                             <input type="checkbox" class="chk-strike-addon" data-strike="3" data-addon="curse" value="3">
-                                                            <span class="addon-name">Curse (+3)</span>
+                                                            <span class="addon-name">HB's Curse (+3)</span>
                                                         </label>
                                                         <label class="addon-checkbox">
                                                             <input type="checkbox" class="chk-strike-addon" data-strike="3" data-addon="smite" value="4d6">
-                                                            <span class="addon-name">Smite (+4d6)</span>
+                                                            <span class="addon-name">Shining Smite (+4d6)</span>
                                                         </label>
                                                     </div>
                                                     <button class="btn-roll-single-dmg" data-strike="3" id="btn-roll-single-3">Roll Lẻ</button>
@@ -320,23 +320,56 @@
                                     <!-- ==========================================
                                          SUB-PANEL 2: CAST SPELL
                                          ========================================== -->
-                                    <div class="action-sub-panel" id="panel-action-spell">
-                                        <div class="spell-panel-content">
-                                            <p class="action-panel-desc">Cast a Spell: Thi triển ma pháp của Warlock (Hexblade).</p>
-                                            <div class="quick-spells-list" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                                                 <button class="btn-quick-roll-spell" data-spell="Eldritch Blast" data-dmg="2d10" data-type="Force">Eldritch Blast (2 Beams, 1d10+4)</button>
-                                                 <button class="btn-quick-roll-spell" data-spell="Chill Touch" data-dmg="2d10" data-type="Necrotic">Chill Touch (Cantrip, 2d10)</button>
-                                                 <button class="btn-quick-roll-spell" data-spell="Booming Blade" data-dmg="1d8" data-type="Thunder">Booming Blade (Cantrip, +1d8 Lôi)</button>
-                                                 <button class="btn-quick-roll-spell" data-spell="False Life" data-dmg="0" data-type="Necromancy">False Life (Fiendish Vigor, +23 THP Free)</button>
-                                                 <button class="btn-quick-roll-spell" data-spell="Darkness" data-dmg="0" data-type="Evocation">Darkness (L2, Obscure 15ft)</button>
-                                                 <button class="btn-quick-roll-spell" data-spell="Shining Smite" data-dmg="4d6" data-type="Radiant">Shining Smite (L4, +4d6 Quang)</button>
-                                                 <button class="btn-quick-roll-spell" data-spell="Fly" data-dmg="0" data-type="Transmutation">Fly (L3, Bay 60ft)</button>
-                                                 <button class="btn-quick-roll-spell" data-spell="Dimension Door" data-dmg="0" data-type="Conjuration">Dimension Door (L4, Teleport 500ft)</button>
-                                                 <button class="btn-quick-roll-spell" data-spell="Shadow of Moil" data-dmg="2d8" data-type="Necrotic">Shadow of Moil (L4, Phản đòn 2d8 Héo)</button>
-                                                 <button class="btn-quick-roll-spell" data-spell="Revivify" data-dmg="0" data-type="Necromancy" style="border-color: rgba(46, 204, 113, 0.4); background: rgba(46, 204, 113, 0.05);">Revivify (Campaign, Hồi sinh 1 HP)</button>
+                                     <div class="action-sub-panel" id="panel-action-spell">
+                                         <div class="spell-panel-content">
+                                             <p class="action-panel-desc" style="margin-bottom: 15px;">Cast a Spell: Thi triển ma pháp của Warlock (Hexblade).</p>
+                                             
+                                             <!-- CANTRIPS (PHÉP CƠ BẢN) -->
+                                             <div class="spell-category-section cantrips">
+                                                 <div class="spell-category-header">Phép cơ bản (Cantrips)</div>
+                                                 <div class="quick-spells-list" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
+                                                     <button class="btn-quick-roll-spell" data-spell="Eldritch Blast" data-dmg="2d10" data-type="Force">Eldritch Blast (2 Beams, 1d10+4)</button>
+                                                     <button class="btn-quick-roll-spell" data-spell="Chill Touch" data-dmg="2d10" data-type="Necrotic">Chill Touch (Cantrip, 2d10)</button>
+                                                     <button class="btn-quick-roll-spell" data-spell="Booming Blade" data-dmg="1d8" data-type="Thunder">Booming Blade (Cantrip, +1d8 Lôi)</button>
+                                                 </div>
                                              </div>
-                                        </div>
-                                    </div>
+ 
+                                             <!-- SPELLS LEVEL 2 (PHÉP CẤP 2) -->
+                                             <div class="spell-category-section level2">
+                                                 <div class="spell-category-header">Phép Cấp 2 (Level 2 Spells)</div>
+                                                 <div class="quick-spells-list" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
+                                                     <button class="btn-quick-roll-spell" data-spell="Darkness" data-dmg="0" data-type="Evocation">Darkness (L2, Obscure 15ft)</button>
+                                                 </div>
+                                             </div>
+ 
+                                             <!-- SPELLS LEVEL 3 (PHÉP CẤP 3) -->
+                                             <div class="spell-category-section level3">
+                                                 <div class="spell-category-header">Phép Cấp 3 (Level 3 Spells)</div>
+                                                 <div class="quick-spells-list" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
+                                                     <button class="btn-quick-roll-spell" data-spell="Fly" data-dmg="0" data-type="Transmutation">Fly (L3, Bay 60ft)</button>
+                                                 </div>
+                                             </div>
+ 
+                                             <!-- SPELLS LEVEL 4 (PHÉP CẤP 4) -->
+                                             <div class="spell-category-section level4">
+                                                 <div class="spell-category-header">Phép Cấp 4 (Level 4 Spells)</div>
+                                                 <div class="quick-spells-list" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
+                                                     <button class="btn-quick-roll-spell" data-spell="Shining Smite" data-dmg="4d6" data-type="Radiant">Shining Smite (L4, +4d6 Quang)</button>
+                                                     <button class="btn-quick-roll-spell" data-spell="Dimension Door" data-dmg="0" data-type="Conjuration">Dimension Door (L4, Teleport 500ft)</button>
+                                                     <button class="btn-quick-roll-spell" data-spell="Shadow of Moil" data-dmg="2d8" data-type="Necrotic">Shadow of Moil (L4, Phản đòn 2d8 Héo)</button>
+                                                 </div>
+                                             </div>
+ 
+                                             <!-- SPECIAL & CAMPAIGN SPELLS (PHÉP ĐẶC BIỆT) -->
+                                             <div class="spell-category-section special">
+                                                 <div class="spell-category-header">Phép Đặc Biệt & Vật Phẩm</div>
+                                                 <div class="quick-spells-list" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                                                     <button class="btn-quick-roll-spell" data-spell="False Life" data-dmg="0" data-type="Necromancy">False Life (Fiendish Vigor, +23 THP Free)</button>
+                                                     <button class="btn-quick-roll-spell" data-spell="Revivify" data-dmg="0" data-type="Necromancy" style="border-color: rgba(46, 204, 113, 0.4); background: rgba(46, 204, 113, 0.05);">Revivify (Campaign, Hồi sinh 1 HP)</button>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </div>
 
                                     <!-- ==========================================
                                          SUB-PANEL 3: DASH
@@ -391,15 +424,15 @@
                                         </div>
                                     </div>
 
-                                    <!-- ==========================================
-                                         SUB-PANEL 8: USE OBJECT
-                                         ========================================== -->
                                     <div class="action-sub-panel" id="panel-action-useobj">
-                                        <div class="action-panel-info">
-                                            <p class="action-panel-desc"><strong>USE OBJECT:</strong> Sử dụng một vật phẩm hoặc uống thuốc dược (Potion) hồi máu từ túi đồ.</p>
-                                            <button class="btn-quick-action-roll item-use" id="btn-quick-use-potion">UỐNG POTION OF GREATER HEALING (HỒI 4d4 + 4 HP)</button>
-                                        </div>
-                                    </div>
+                                         <div class="action-panel-info">
+                                             <p class="action-panel-desc" style="margin-bottom: 12px;"><strong>USE OBJECT:</strong> Sử dụng một vật phẩm ma pháp hoặc dược phẩm từ kho đồ.</p>
+                                             <div style="display: flex; flex-direction: column; gap: 10px;">
+                                                 <button class="btn-quick-action-roll item-use" id="btn-quick-use-potion" style="width: 100%;">UỐNG POTION OF GREATER HEALING (HỒI 4d4 + 4 HP)</button>
+                                                 <button class="btn-quick-roll-spell" data-spell="Kasa Veil" data-dmg="0" data-type="Conjuration" style="width: 100%; border-color: rgba(155, 89, 182, 0.4); background: rgba(155, 89, 182, 0.05);">Kasa: Veil of Forgotten Existence (1 Charge)</button>
+                                             </div>
+                                         </div>
+                                     </div>
 
                                 </div>
                             </div>
@@ -470,6 +503,15 @@
                                             </div>
                                             <button class="btn-quick-roll-spell" data-spell="Shining Smite" data-dmg="4d6" data-type="Radiant">ROLL SÁT THƯƠNG</button>
                                         </div>
+                                        
+                                        <!-- Trickster's Leap -->
+                                        <div class="bonus-action-item" data-action="kasa-leap">
+                                            <div class="bonus-action-info">
+                                                <div class="bonus-action-name">Trickster's Leap (Kasa-obake)</div>
+                                                <div class="bonus-action-desc">Kasa-obake tự di chuyển 20 feet (nhảy lò cò), có thể đi trên tường hoặc trần nhà.</div>
+                                            </div>
+                                            <button class="btn-bonus-action" id="btn-use-kasa-leap-bonus">KÍCH HOẠT</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -513,6 +555,24 @@
                                             </div>
                                             <button class="btn-reaction-action" id="btn-use-opportunity-attack">TẤN CÔNG CƠ HỘI</button>
                                         </div>
+                                        
+                                        <!-- Bulwark Damage Reduction -->
+                                        <div class="reaction-action-item" data-action="bulwark-reduction" id="reaction-item-bulwark-reduction" style="display: none;">
+                                            <div class="reaction-action-info">
+                                                <div class="reaction-action-name">Bulwark Weapon Shield (Giáp Adamantine)</div>
+                                                <div class="reaction-action-desc">Giảm sát thương từ đòn đánh vũ khí vật lý đi Proficiency Bonus của bạn (+3).</div>
+                                            </div>
+                                            <button class="btn-reaction-action" id="btn-use-bulwark-reduction">KÍCH HOẠT</button>
+                                        </div>
+
+                                        <!-- Bulwark Steady Body -->
+                                        <div class="reaction-action-item" data-action="bulwark-resist" id="reaction-item-bulwark-resist" style="display: none;">
+                                            <div class="reaction-action-info">
+                                                <div class="reaction-action-name">Bulwark Steady Body (Giáp Adamantine)</div>
+                                                <div class="reaction-action-desc">Nhận Lợi thế (Advantage) trong lượt cứu nguy (Saving Throw) chống lại dịch chuyển cưỡng ép hoặc ngã Prone.</div>
+                                            </div>
+                                            <button class="btn-reaction-action" id="btn-use-bulwark-resist">KÍCH HOẠT</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -549,6 +609,7 @@
                                 <span class="total-dmg-label">TỔNG SÁT THƯƠNG (TOTAL DMG)</span>
                                 <span class="total-dmg-value" id="total-dmg-value">0</span>
                             </div>
+                            <button class="btn-reset-turn-large" id="btn-reset-turn-large">NEXT TURN</button>
                         </div>
                     </div>
 
@@ -595,6 +656,24 @@
                                         <div class="resource-box" id="res-seed-life" style="flex: 1;">
                                             <div class="res-label" title="Life Pulse (1/Long Rest)">Seed Life</div>
                                             <input type="checkbox" id="chk-res-seedLife" class="resource-chk">
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        <div class="resource-box" id="res-bulwark-recovery" style="flex: 1;">
+                                            <div class="res-label" title="Bulwark Recovery (3/Long Rest)">Bulwark Recovery</div>
+                                            <div style="display:flex; gap:8px; justify-content: center;">
+                                                <input type="checkbox" id="chk-res-bulwarkRecovery1" class="resource-chk">
+                                                <input type="checkbox" id="chk-res-bulwarkRecovery2" class="resource-chk">
+                                                <input type="checkbox" id="chk-res-bulwarkRecovery3" class="resource-chk">
+                                            </div>
+                                        </div>
+                                        <div class="resource-box" id="res-kasa-charges" style="flex: 1;">
+                                            <div class="res-label" title="Kasa-obake Charges (3/day)">Kasa Charges</div>
+                                            <div style="display:flex; gap:8px; justify-content: center;">
+                                                <input type="checkbox" id="chk-res-kasaCharges1" class="resource-chk">
+                                                <input type="checkbox" id="chk-res-kasaCharges2" class="resource-chk">
+                                                <input type="checkbox" id="chk-res-kasaCharges3" class="resource-chk">
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="resource-box" id="res-graspless" style="width: 100%;">
@@ -649,6 +728,17 @@
                                     <input type="checkbox" value="unconscious">
                                     <span>Unconscious</span>
                                 </label>
+                            </div>
+                        </div>
+
+                        <!-- Lịch sử lượt đấu (Round History) -->
+                        <div class="combat-round-history-panel glass-panel">
+                            <div class="panel-header-with-btn" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="panel-title" style="margin: 0;">LỊCH SỬ LƯỢT ĐẤU</h3>
+                                <button class="btn-reset-combat" id="btn-reset-combat" style="background: none; border: none; color: var(--color-danger); opacity: 0.6; cursor: pointer; font-size: 0.72rem; font-family: var(--font-heading); letter-spacing: 0.5px; transition: all 0.3s;">KẾT THÚC COMBAT</button>
+                            </div>
+                            <div class="round-history-list" id="round-history-list" data-lenis-prevent>
+                                <!-- JS inserts history items here -->
                             </div>
                         </div>
 
@@ -707,6 +797,24 @@
                 </div>
                 <div class="dice-total-display" id="dice-total-display">23</div>
                 <div class="dice-crit-alert" id="dice-crit-text">TRÚNG!</div>
+            </div>
+
+            <!-- Các nút lựa chọn kết quả cho đòn Tấn công Cơ hội -->
+            <div class="dice-modal-oa-buttons" id="dice-modal-oa-buttons" style="display: none; gap: 15px; justify-content: center; margin-top: 25px; width: 100%;">
+                <button class="btn-dismiss-roll" id="btn-oa-hit" style="background: var(--color-success); border-color: var(--color-success); margin-top: 0; flex: 1;">TRÚNG (HIT)</button>
+                <button class="btn-dismiss-roll" id="btn-oa-miss" style="background: var(--color-danger); border-color: var(--color-danger); margin-top: 0; flex: 1;">HỤT (MISS)</button>
+            </div>
+
+            <!-- Bảng thiết lập sát thương đòn OA trúng -->
+            <div class="dice-modal-oa-damage-setup" id="dice-modal-oa-damage-setup" style="display: none; flex-direction: column; align-items: center; margin-top: 20px; width: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: var(--border-radius-md); border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                        <span style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; font-family: var(--font-heading);">Xúc xắc Sát thương</span>
+                        <span id="oa-damage-dice-expression" style="font-size: 1.1rem; font-weight: 600; color: #ffffff; font-family: var(--font-heading); margin-top: 4px;">2d6 + 6 + 1d4</span>
+                    </div>
+                    <button class="btn-strike-toggle crit" id="btn-oa-crit-toggle" style="height: 35px; width: 65px; margin-left: 15px; margin-top: 0;">CRIT</button>
+                </div>
+                <button class="btn-dismiss-roll" id="btn-oa-roll-damage" style="background: var(--color-accent-orange); border-color: var(--color-accent-orange); width: 100%; margin-top: 0;">ROLL SÁT THƯƠNG</button>
             </div>
 
             <button class="btn-dismiss-roll" id="btn-dismiss-roll">ĐỒNG Ý</button>

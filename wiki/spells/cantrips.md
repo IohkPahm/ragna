@@ -38,4 +38,4 @@ Nhiều cantrip tăng damage theo **Character Level** (không phải Fighter Lev
 
 ---
 
-*Xem thêm: [Spells Known](spells-known.md) | [Eldritch Knight](../character/eldritch-knight.md)*
+*Xem thêm: [Spell của Ragna](Spell%20c%E1%BB%A7a%20Ragna.md) | [Eldritch Knight](../character/eldritch-knight.md)*

@@ -63,7 +63,7 @@
 
 ---
 
-### 6. Lessons of the First Ones *(PHB'24 p156)*
+### 6. Lesson of the First One - Lords' Alliance Agent *(PHB'24 p156)*
 **Prerequisite**: Level 2+
 
 - Nhận **1 Origin Feat** tùy chọn.

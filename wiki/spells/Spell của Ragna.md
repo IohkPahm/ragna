@@ -1,4 +1,4 @@
-# 📖 Spells Prepared — Ragna (Hexblade Warlock)
+# 🔮 Spell của Ragna — Spells Prepared (Hexblade Warlock)
 
 > Danh sách ma pháp Ragna đã chuẩn bị (Prepared Spells).  
 > Theo PHB 2024 & Hexblade subclass rules:
@@ -22,7 +22,7 @@
 ## 🪄 Cantrips (Vô hạn dùng)
 
 ### 1. Booming Blade *(TCE p106)*
-- **Casting Time**: 1 Action | **Range**: Self (5-foot radius) | **Components**: S, M (a melee weapon) | **Duration**: 1 round
+- **Casting Time**: 1 Action | **Range**: Self (5-foot radius) | **Components**: S, M (a melee weapon worth at least 1 sp) | **Duration**: 1 round
 - **Hiệu ứng**: Thực hiện 1 đòn đánh cận chiến. On hit, gây damage vũ khí bình thường + **1d8 Thunder damage**. Đồng thời, mục tiêu bị bao bọc trong năng lượng sấm sét; nếu nó tự ý di chuyển từ 5 ft trở lên trước đầu lượt tiếp theo của bạn, nó chịu thêm **2d8 Thunder damage**.
 - *Nâng cấp cấp 5*: Thêm 1d8 thunder khi trúng, và 2d8 khi di chuyển.
 
@@ -43,7 +43,7 @@
 - **Hiệu ứng**: Tạo rào chắn vô hình giúp bạn nhận **+5 AC** (bao gồm cả đòn tấn công kích hoạt phép) và miễn nhiễm sát thương từ *Magic Missile* cho đến đầu lượt tiếp theo.
 
 ### 2. False Life *(PHB'24 p271)*
-- **Level 1 Necromancy** | **Casting Time**: 1 Action | **Range**: Self | **Components**: V, S, M | **Duration**: Instantaneous
+- **Level 1 Necromancy** | **Casting Time**: 1 Action | **Range**: Self | **Components**: V, S, M (a drop of alcohol) | **Duration**: Instantaneous
 - **Hiệu ứng**: Nhận 1d4 + 4 THP (bậc 1). Mỗi bậc cao hơn +5 THP. Bậc 4: 1d4 + 19 THP.
 - *Chú ý*: **Fiendish Vigor** cho phép cast False Life **không tốn slot** và luôn nhận số THP cao nhất của die. Vì Pact Magic quy định spell level = Pact slot level (Bậc 4), nên cast qua Fiendish Vigor = Bậc 4, miễn phí = **23 THP** tự động (max roll).
 
@@ -54,7 +54,7 @@
 - Nếu bạn hoặc sinh vật đi cùng xuất hiện ở ô đã bị chiếm dụng bởi sinh vật khác hoặc vật thể, cả hai chịu **4d6 Force damage** và phép dịch chuyển thất bại.
 
 ### 4. Darkness *(PHB'24 p260)*
-- **Level 2 Evocation** | **Casting Time**: 1 Action | **Range**: 60 feet | **Components**: V, M | **Duration**: Conc, up to 10 minutes
+- **Level 2 Evocation** | **Casting Time**: 1 Action | **Range**: 60 feet | **Components**: V, M (bat fur and a piece of coal) | **Duration**: Conc, up to 10 minutes
 - **Hiệu ứng**: Tạo vùng bóng tối ma thuật Sphere bán kính 15 ft. Darkvision thường không nhìn xuyên qua được. Dispels các nguồn sáng ma thuật từ spell bậc 2 trở xuống.
 - *Combo*: Kết hợp với Invocation *Devil's Sight* để bạn nhìn rõ mục tiêu trong bóng tối trong khi kẻ địch bị Blinded vs bạn (bạn được Advantage và kẻ địch bị Disadvantage).
 
@@ -63,7 +63,7 @@
 - **Hiệu ứng**: Đòn đánh gây thêm **4d6 Radiant damage** (upcast bậc 4). Mục tiêu phát sáng trong 5 ft, mọi attack rolls chống lại nó có **Advantage**, và nó không được nhận trạng thái Invisible.
 
 ### 6. Fly *(PHB'24 p276)*
-- **Level 3 Transmutation** | **Casting Time**: 1 Action | **Range**: Touch | **Components**: V, S, M | **Duration**: Conc, up to 10 minutes
+- **Level 3 Transmutation** | **Casting Time**: 1 Action | **Range**: Touch | **Components**: V, S, M (a feather) | **Duration**: Conc, up to 10 minutes
 - **Hiệu ứng**: Ban Fly Speed 60 ft cho mục tiêu (upcast bậc 4 có thể target **2 mục tiêu** cùng lúc).
 
 ### 7. Counterspell *(PHB'24 p258)*
@@ -71,7 +71,7 @@
 - **Hiệu ứng**: Cản trở cast phép. Mục tiêu phải thực hiện **Constitution saving throw (DC 15)**. Thất bại, phép của nó bị triệt tiêu và mất Action/Reaction, không mất spell slot.
 
 ### 8. Shadow of Moil *(XGE p164)*
-- **Level 4 Necromancy** | **Casting Time**: 1 Action | **Range**: Self | **Components**: V, S, M | **Duration**: Conc, up to 1 minute
+- **Level 4 Necromancy** | **Casting Time**: 1 Action | **Range**: Self | **Components**: V, S, M (an undead eyeball encased in a gem worth at least 150 gp) | **Duration**: Conc, up to 1 minute
 - **Hiệu ứng**: Bóng tối bọc lấy cơ thể bạn. Bạn trở thành **Heavily Obscured** (kẻ địch tấn công bạn bị Disadvantage, bạn tấn công được Advantage). Tự động kháng (Resistance) Radiant damage. Khi bị kẻ địch trong 10ft đánh trúng, bóng tối phản kích gây **2d8 Necrotic damage** lên kẻ đó.
 
 ---
@@ -79,9 +79,10 @@
 ## 🏆 Phép đặc biệt từ Campaign (Không tính vào giới hạn 8)
 
 ### 9. Revivify *(PHB'24 p312)*
-- **Level 3 Necromancy** | **Casting Time**: 1 Action | **Range**: Touch | **Components**: V, S, M (Diamond 300+ GP bị tiêu hao) | **Duration**: Instantaneous
+- **Level 3 Necromancy** | **Casting Time**: 1 Action | **Range**: Touch | **Components**: V, S, M (a diamond worth 300+ GP, which the spell consumes) | **Duration**: Instantaneous
 - **Hiệu ứng**: Chạm vào creature vừa chết trong vòng 1 phút, cứu sống nó trỗi dậy với **1 Hit Point**.
 - *Ghi chú*: Nhận được thông qua cốt truyện chiến dịch của DM.
+- *Ghi chú từ người chơi*: Đối với phép Revivify này, Warlock bình thường sẽ không có. Nhưng trong campaign đang chơi thì Ragna đã nhận được spell này, không tính trong tổng 8 spell prepared của bảng.
 
 ---
 

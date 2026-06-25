@@ -22,8 +22,8 @@
 
 | | |
 |--|--|
-| **Max HP** | 54 |
-| **Armor Class** | **19** (Half Plate 15 + 2 DEX + 1 Armor enchant + 1 Cloak) |
+| **Max HP** | 61 |
+| **Armor Class** | **19** (Bulwark 15 + 2 DEX + 1 +1 Armor + 1 Cloak) |
 | **Hit Die** | d8 |
 
 ---
@@ -86,6 +86,7 @@
 | 9 | 2 | 5th |
 
 > **Ragna (Lv7)**: 2 slots, mỗi slot là **level 4**. Mọi spell đều tự động upcast lên level 4.
+> Xem chi tiết danh sách phép tại: [Spell của Ragna](../spells/Spell%20c%E1%BB%A7a%20Ragna.md)
 
 ---
 
@@ -98,11 +99,11 @@
 | 3 | **Devil's Sight** | PHB'24 p155 | Nhìn bình thường trong Dim Light & Darkness (kể cả magical) tới 120 ft |
 | 4 | **Fiendish Vigor** | PHB'24 p155 | Cast False Life lên bản thân không tốn slot, luôn nhận số THP tối đa |
 | 5 | **Thirsting Blade** | PHB'24 p157 | **Extra Attack** với Pact Weapon (tấn công 2 lần với Attack action) |
-| 6 | **Lessons of the First Ones** | PHB'24 p156 | Nhận 1 Origin Feat: **Lords' Alliance Agent** |
+| 6 | **Lesson of the First One - Lords' Alliance Agent** | PHB'24 p156 | Nhận 1 Origin Feat: **Lords' Alliance Agent** |
 
-### Lords' Alliance Agent (Origin Feat từ Lessons of the First Ones)
-- **Inspiring Strike**: 1 lần/turn khi Critical Hit → 1 ally trong 30 ft nhận Heroic Inspiration.
-- **Reassert Honor**: Khi ally trong 5 ft bị damage bởi enemy → Advantage trên next attack vs enemy đó trước cuối lượt tiếp theo.
+### Lords' Alliance Agent (Origin Feat từ Lesson of the First One)
+- **Inspiring Strike (Đòn Đánh Truyền Cảm Hứng)**: Mỗi lượt một lần khi bạn tung đòn Chí Mạng (Critical Hit) trúng 1 sinh vật, bạn có thể chọn 1 đồng minh trong vòng 30 ft nhìn thấy hoặc nghe thấy bạn và hiện tại chưa có Cảm Hứng Anh Hùng (Heroic Inspiration). Đồng minh đó sẽ nhận được Cảm Hứng Anh Hùng (Heroic Inspiration).
+- **Reassert Honor (Khẳng Định Danh Dự)**: Khi kẻ địch bạn nhìn thấy gây sát thương lên một đồng minh ở cách bạn trong vòng 5 ft, bạn có Lợi thế (Advantage) cho đòn tấn công tiếp theo chống lại kẻ địch đó trước khi kết thúc lượt đi tiếp theo của bạn.
 
 ---
 
@@ -151,6 +152,8 @@
 
 ## ⚔️ Vũ khí & Items
 
+> Xem chi tiết toàn bộ thuộc tính, hiệu ứng và lời nguyền tại: [Trang bị của Ragna](Trang%20b%E1%BB%8B%20c%E1%BB%A7a%20Ragna.md)
+
 ### 1. Mortal Wrath (Greatsword +2)
 - **+2** Attack & Damage rolls.
 - **Wrath Accumulation**: Mỗi hit thành công → tích lũy +1d4 Necrotic damage (cộng dồn từng đòn: hit 1: +1d4, hit 2: +2d4...). 
@@ -177,10 +180,9 @@
 ### 2. Cloak of Protection *(Attunement)*
 - **+1 AC và +1 tất cả Saving Throws** khi mặc.
 
-### 3. +1 Armor *(Half Plate — Enchanted, Rare)*
-- Half Plate cơ bản: AC 15 + DEX modifier (max 2).
-- Enchantment: **+1 AC bonus**.
-- Tổng từ armor: **18 AC** (15 + 2 DEX + 1 enchant), cộng thêm +1 từ Cloak → **19 AC**.
+### 3. +1 Armor *(Enchantment, Rare)*
+- Cường hóa ma pháp đặc biệt: **+1 AC bonus** thụ động (luôn hoạt động bất kể mặc giáp nào).
+- Tổng AC: **19** (15 Bulwark + 2 DEX + 1 +1 Armor + 1 Cloak).
 
 
 ### 4. Shapeshifter Mask *(Attunement, Uncommon)*
@@ -217,11 +219,11 @@
 | **Spell Attack** | **+9** (PB +3 + CHA +4 + Mortal Wrath +2) |
 | **Pact Weapon** | Mortal Wrath (Greatsword +2) via Pact of the Blade |
 | **Weapon Attack** | **+9** (PB +3 + CHA +4 + Weapon +2) |
-| **Armor Class** | **19** (Half Plate 15 + DEX 2 + Armor +1 + Cloak +1) |
+| **Armor Class** | **19** (Bulwark 15 + DEX 2 + +1 Armor + 1 Cloak) |
 | **Saving Throws** | **+1 to all** (từ Cloak of Protection) |
 | **Hexblade's Curse** | 1/Short or Long Rest |
 | **Accursed Specter** | 1/Long Rest |
 
 ---
 
-*Xem thêm: [Warlock Class](warlock.md) | [Hexblade Subclass](hexblade.md) | [Eldritch Invocations](invocations.md)*
+*Xem thêm: [Warlock Class](warlock.md) | [Hexblade Subclass](hexblade.md) | [Eldritch Invocations](invocations.md) | [Spell của Ragna](../spells/Spell%20c%E1%BB%A7a%20Ragna.md)*

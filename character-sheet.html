@@ -88,7 +88,7 @@
                     <div class="view-hp-bar-container">
                         <div class="hp-bar-header">
                             <span>HP / Máu Tạm Thời</span>
-                            <span class="hp-text-display"><span id="view-current-hp">54</span> / 54 <span id="view-temp-hp-label" style="color:var(--color-info); display:none;">(+<span id="view-temp-hp">0</span> THP)</span></span>
+                            <span class="hp-text-display"><span id="view-current-hp">61</span> / <span id="view-max-hp">61</span> <span id="view-temp-hp-label" style="color:var(--color-info); display:none;">(+<span id="view-temp-hp">0</span> THP)</span></span>
                         </div>
                         <div class="hp-bar-bg" style="height:12px;">
                             <div class="hp-bar-fill" id="view-hp-bar-fill" style="width: 100%;"></div>
@@ -431,6 +431,22 @@
                                                 <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="graspless3">
                                             </div>
                                         </div>
+                                        <div class="interactive-res-box" title="Bulwark Adamantine - Spell Recovery (3/Long Rest)">
+                                            <span class="interactive-res-label">Bulwark Recovery</span>
+                                            <div class="interactive-res-controls">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="bulwarkRecovery1">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="bulwarkRecovery2">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="bulwarkRecovery3">
+                                            </div>
+                                        </div>
+                                        <div class="interactive-res-box" title="Kasa-obake - Veil of Forgotten Existence (3/Long Rest)">
+                                            <span class="interactive-res-label">Kasa Charges</span>
+                                            <div class="interactive-res-controls">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="kasaCharges1">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="kasaCharges2">
+                                                <input type="checkbox" class="interactive-res-chk res-sync-chk" data-res="kasaCharges3">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -450,8 +466,8 @@
                                         <div class="interactive-item-card" id="item-mortal-wrath">
                                             <div class="item-card-top">
                                                 <div class="item-card-title-block">
-                                                    <span class="item-card-title rare">Mortal Wrath (Greatsword +2)</span>
-                                                    <span class="item-card-rarity">Vũ Khí Liên Kết, Rare (Attunement)</span>
+                                                    <span class="item-card-title legendary">Mortal Wrath (Greatsword +2)</span>
+                                                    <span class="item-card-rarity">Vũ Khí Liên Kết, Legendary (Attunement)</span>
                                                 </div>
                                                 <div class="item-card-actions">
                                                     <span class="item-weight">6 lbs</span>
@@ -464,57 +480,67 @@
                                             </div>
                                         </div>
 
-                                        <!-- Cloak of Protection -->
-                                        <div class="interactive-item-card" id="item-cloak">
+                                        <!-- Kasa-obake -->
+                                        <div class="interactive-item-card" id="item-kasa-obake">
                                             <div class="item-card-top">
                                                 <div class="item-card-title-block">
-                                                    <span class="item-card-title uncommon">Cloak of Protection</span>
-                                                    <span class="item-card-rarity">Wondrous Item, Uncommon (Attunement)</span>
+                                                    <span class="item-card-title legendary">Kasa-obake (Ma Ô Yêu Quái)</span>
+                                                    <span class="item-card-rarity">Wondrous Item, Legendary (Requires Attunement)</span>
                                                 </div>
                                                 <div class="item-card-actions">
                                                     <span class="item-weight">—</span>
                                                 </div>
                                             </div>
                                             <div class="item-card-desc">
-                                                <p><strong>Hiệu ứng:</strong> Nhận **+1 AC** và **+1 vào tất cả các Saving Throws** khi đang mặc áo choàng này (đã được cộng trực tiếp vào bảng chỉ số).</p>
+                                                <p><strong>Bản tính Bán sinh vật:</strong> AC 15, HP 25, miễn nhiễm độc và sát thương tâm linh. Kasa-obake vừa là một ma pháp cụ vừa là một sinh vật Yokai cỡ nhỏ.</p>
+                                                <p><strong>Màn sương Quên lãng (Veil of Forgotten Existence - 3 Charges):</strong> Dùng 1 Action tạo vùng 10x10 ft ẩn thân tuyệt đối (Greater Invisibility, Truesight không nhìn xuyên được) và chống dò tìm ma thuật. Kẻ địch muốn target bạn phải Wis Save DC 15 hoặc lãng quên.</p>
+                                                <p><strong>Cú nhảy nghịch ngợm (Trickster's Leap, Bonus Action):</strong> Kasa-obake tự di chuyển 20 feet (nhảy lò cò), đi trên tường/trần nhà.</p>
+                                                <p><strong>Tính khí Yokai:</strong> Khi dùng charge cuối đổ d20, ra số 1 Kasa sẽ nghịch ngợm làm mất hiệu ứng ẩn thân.</p>
+                                                <p><strong>Lời nguyền Bị lãng quên:</strong> Sau mỗi 7 ngày liên kết liên tục, phải vượt qua Wisdom Save DC 15 hoặc bị mất đi một ký ức nhỏ.</p>
+                                                <div style="margin-top:8px; display: flex; gap: 8px;">
+                                                    <button class="btn-item-action" id="btn-use-kasa-veil">Dùng Màn sương (1 Charge)</button>
+                                                    <button class="btn-item-action" id="btn-use-kasa-leap">Cú nhảy tinh nghịch (Leap)</button>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <!-- +1 Armor Half Plate -->
-                                        <div class="interactive-item-card" id="item-armor">
+                                        <!-- Bulwark Adamantine Half Plate -->
+                                        <div class="interactive-item-card" id="item-bulwark-armor">
                                             <div class="item-card-top">
                                                 <div class="item-card-title-block">
-                                                    <span class="item-card-title rare">+1 Armor (Half Plate Enchanted)</span>
-                                                    <span class="item-card-rarity">Medium Armor, Rare (Enchanted)</span>
+                                                    <span class="item-card-title rare">Bulwark Adamantine Half Plate</span>
+                                                    <span class="item-card-rarity">Medium Armor, Rare (Requires Attunement)</span>
                                                 </div>
                                                 <div class="item-card-actions">
                                                     <span class="item-weight">40 lbs</span>
                                                 </div>
                                             </div>
                                             <div class="item-card-desc">
-                                                <p><strong>Hiệu ứng:</strong> Giáp Half Plate đặc chế ma pháp. AC cơ bản = 15 + DEX modifier (tối đa +2) + 1 enchantment = 18 AC. Cộng thêm +1 từ Cloak of Protection thành **19 AC** tổng cộng.</p>
+                                                <p><strong>Hiệu ứng:</strong> Giáp Half Plate Adamantine phòng tuyến. AC cơ bản = 15 + DEX modifier (tối đa +3) = 17 AC. Cộng thêm +1 từ cường hóa +1 Armor và +1 từ Cloak of Protection thành **19 AC** tổng cộng (mặc định đã được trang bị).</p>
+                                                <p><strong>Kháng Chí Mạng (Critical Hit Negation):</strong> Mọi đòn chí mạng (Critical Hit) đánh vào bạn sẽ trở thành đòn đánh thường.</p>
+                                                <p><strong>Giảm sát thương vật lý (Reaction):</strong> Khi nhận sát thương từ một đòn tấn công bằng vũ khí, có thể dùng Reaction để giảm lượng sát thương đó đi bằng Proficiency Bonus (+3).</p>
+                                                <p><strong>Chống ngã/dịch chuyển (Reaction):</strong> Khi bị dịch chuyển cưỡng ép hoặc ép ngã Prone, có thể dùng Reaction để lấy Advantage cho lượt cứu nguy (Saving Throw).</p>
+                                                <p><strong>Kháng sát thương vật lý không phép:</strong> Bạn được Kháng (nhận 1/2 sát thương) đối với sát thương bludgeoning, piercing, và slashing từ các đòn không ma thuật.</p>
+                                                <p><strong>Hồi phục Spell Slot (3/Long Rest):</strong> Khi bạn dùng spell slot từ cấp 3 trở lên, cuối lượt của bạn, bạn hồi lại một spell slot đã tiêu hao có cấp độ thấp hơn (tối đa cấp 2).</p>
+                                                <div style="margin-top:8px; display: flex; gap: 8px;">
+                                                    <button class="btn-item-action" id="btn-use-bulwark-recovery">Dùng Hồi Spell Slot</button>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <!-- Shapeshifter Mask -->
-                                        <div class="interactive-item-card" id="item-mask">
+                                        <!-- +1 Armor -->
+                                        <div class="interactive-item-card" id="item-armor">
                                             <div class="item-card-top">
                                                 <div class="item-card-title-block">
-                                                    <span class="item-card-title uncommon">Shapeshifter Mask</span>
-                                                    <span class="item-card-rarity">Wondrous Item, Uncommon (Attunement)</span>
+                                                    <span class="item-card-title rare">+1 Armor</span>
+                                                    <span class="item-card-rarity">Wondrous Item / Enhancement, Rare (Không yêu cầu Attunement)</span>
                                                 </div>
                                                 <div class="item-card-actions">
                                                     <span class="item-weight">—</span>
                                                 </div>
                                             </div>
                                             <div class="item-card-desc">
-                                                <p><strong>Veil of False Skin (2/Long Rest):</strong> Dùng 1 Action thi triển phép *Disguise Self* thay đổi ngoại hình (kéo dài 1 giờ, không cần tập trung Concentration).</p>
-                                                <p><strong>Surface Echo (1/Short Rest):</strong> Dùng 1 Bonus Action đọc ý nghĩ bề mặt của một sinh vật trong 30 ft có INT ≥ 6 (kéo dài 1 round). Target cảm nhận được có sự xâm nhập nhẹ.</p>
-                                                <p><strong>Lời nguyền Dấu Ấn Linh Hồn:</strong> Khi rơi xuống 0 HP, phải roll Wisdom Save DC 13. Thất bại mặt nạ sẽ đổi khuôn mặt bạn ngẫu nhiên vĩnh viễn (chỉ gỡ được bằng phép Remove Curse).</p>
-                                                <div style="margin-top:8px;">
-                                                    <button class="btn-item-action" id="btn-use-mask-disguise">Dùng Disguise Self</button>
-                                                    <button class="btn-item-action" id="btn-use-mask-thoughts">Dùng Surface Echo</button>
-                                                </div>
+                                                <p><strong>Hiệu ứng:</strong> Cường hóa ma pháp đặc biệt giúp tăng **+1 AC** cho Ragna khi mặc bất kỳ bộ giáp nào (hiệu ứng cộng dồn thụ động, đã được áp dụng trực tiếp vào bảng chỉ số).</p>
                                             </div>
                                         </div>
 
@@ -536,6 +562,44 @@
                                                 <div style="margin-top:8px;">
                                                     <button class="btn-item-action" id="btn-use-kimono-repel">Dùng Word: Repel (Fear)</button>
                                                     <button class="btn-item-action" id="btn-use-kimono-hunt">Dùng Word: Hunt (Teleport +2d6 Radiant)</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Cloak of Protection -->
+                                        <div class="interactive-item-card" id="item-cloak">
+                                            <div class="item-card-top">
+                                                <div class="item-card-title-block">
+                                                    <span class="item-card-title uncommon">Cloak of Protection</span>
+                                                    <span class="item-card-rarity">Wondrous Item, Uncommon (Attunement)</span>
+                                                </div>
+                                                <div class="item-card-actions">
+                                                    <span class="item-weight">—</span>
+                                                </div>
+                                            </div>
+                                            <div class="item-card-desc">
+                                                <p><strong>Hiệu ứng:</strong> Nhận **+1 AC** và **+1 vào tất cả các Saving Throws** khi đang mặc áo choàng này (đã được cộng trực tiếp vào bảng chỉ số).</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Shapeshifter Mask -->
+                                        <div class="interactive-item-card" id="item-mask">
+                                            <div class="item-card-top">
+                                                <div class="item-card-title-block">
+                                                    <span class="item-card-title uncommon">Shapeshifter Mask</span>
+                                                    <span class="item-card-rarity">Wondrous Item, Uncommon (Attunement)</span>
+                                                </div>
+                                                <div class="item-card-actions">
+                                                    <span class="item-weight">—</span>
+                                                </div>
+                                            </div>
+                                            <div class="item-card-desc">
+                                                <p><strong>Veil of False Skin (2/Long Rest):</strong> Dùng 1 Action thi triển phép *Disguise Self* thay đổi ngoại hình (kéo dài 1 giờ, không cần tập trung Concentration).</p>
+                                                <p><strong>Surface Echo (1/Short Rest):</strong> Dùng 1 Bonus Action đọc ý nghĩ bề mặt của một sinh vật trong 30 ft có INT ≥ 6 (kéo dài 1 round). Target cảm nhận được có sự xâm nhập nhẹ.</p>
+                                                <p><strong>Lời nguyền Dấu Ấn Linh Hồn:</strong> Khi rơi xuống 0 HP, phải roll Wisdom Save DC 13. Thất bại mặt nạ sẽ đổi khuôn mặt bạn ngẫu nhiên vĩnh viễn (chỉ gỡ được bằng phép Remove Curse).</p>
+                                                <div style="margin-top:8px;">
+                                                    <button class="btn-item-action" id="btn-use-mask-disguise">Dùng Disguise Self</button>
+                                                    <button class="btn-item-action" id="btn-use-mask-thoughts">Dùng Surface Echo</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -895,12 +959,16 @@
                                         <div class="feat-panel-card">
                                             <div class="feat-card-top">
                                                 <div class="feat-card-title-block">
-                                                    <span class="feat-card-title">Lessons of the First Ones</span>
+                                                    <span class="feat-card-title">Lesson of the First One - Lords' Alliance Agent</span>
                                                     <span class="feat-card-source">PHB 2024 page 156</span>
                                                 </div>
                                             </div>
                                             <div class="feat-card-desc">
-                                                <p>Nhận 1 Origin Feat tùy chọn. Ragna nhận feat **Lords' Alliance Agent** (Inspiring Strike khi Crit tạo Heroic Inspiration cho đồng đội; Reassert Honor tạo Advantage khi đồng đội cạnh bên bị damage).</p>
+                                                <p>Nhận 1 Origin Feat tùy chọn. Ragna chọn chiến tích khởi nguồn (Origin Feat): <strong>Lords' Alliance Agent</strong> (Đại diện Liên Minh Các Chúa Tể), mang lại các lợi ích sau:</p>
+                                                <ul style="margin-left: 20px; margin-top: 8px; list-style-type: disc; display: flex; flex-direction: column; gap: 6px; font-size: 0.78rem; color: var(--color-text-muted);">
+                                                    <li><strong>Inspiring Strike (Đòn Đánh Truyền Cảm Hứng):</strong> Mỗi lượt một lần khi bạn tung đòn đánh Chí mạng (Critical Hit) trúng một sinh vật, bạn có thể chọn một đồng minh trong vòng 30 feet nhìn thấy hoặc nghe thấy bạn và hiện tại chưa có Cảm Hứng Anh Hùng (Heroic Inspiration). Đồng minh đó sẽ nhận được Cảm Hứng Anh Hùng.</li>
+                                                    <li><strong>Reassert Honor (Khẳng Định Danh Dự):</strong> Khi một kẻ địch trong tầm nhìn của bạn gây sát thương lên một đồng minh ở cách bạn trong vòng 5 feet, bạn sẽ nhận được Lợi thế (Advantage) cho đòn tấn công tiếp theo chống lại kẻ địch đó trước khi kết thúc lượt đi tiếp theo của bạn.</li>
+                                                </ul>
                                             </div>
                                         </div>
 

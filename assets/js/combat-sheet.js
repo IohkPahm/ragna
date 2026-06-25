@@ -22,16 +22,36 @@ document.addEventListener("DOMContentLoaded", () => {
     // ═══════════════════════════════════
     const DEFAULT_STATE = {
         name: "Ragna",
-        hpMax: 54,
-        hpCurrent: 54,
+        hpMax: 61,
+        hpCurrent: 61,
         hpTemp: 0,
         ac: 19,
         shieldActive: false,
+        equippedArmor: "bulwark",
         initiative: 2,
         pactSlotsMax: 2,
         pactSlotsCurrent: 2,
         wrathStack: 0,
         pactWeaponDamageType: "Slashing",
+        currentTurn: 1,
+        roundHistory: [],
+        turnActions: {
+            pact: false,
+            repel: false,
+            counterspell: false,
+            opportunity: false,
+            curse: false,
+            maskThoughts: false,
+            kimonoHunt: false,
+            shield: false,
+            kasaLeap: false,
+            bulwarkReduction: false,
+            bulwarkResist: false,
+            actionChecked: true,
+            bonusChecked: false,
+            reactionChecked: false,
+            movementChecked: false
+        },
         resources: {
             curse: false,
             specter: false,
@@ -43,7 +63,13 @@ document.addEventListener("DOMContentLoaded", () => {
             seedLife: false,
             graspless1: false,
             graspless2: false,
-            graspless3: false
+            graspless3: false,
+            bulwarkRecovery1: false,
+            bulwarkRecovery2: false,
+            bulwarkRecovery3: false,
+            kasaCharges1: false,
+            kasaCharges2: false,
+            kasaCharges3: false
         },
         conditions: {
             blinded: false,
@@ -52,6 +78,12 @@ document.addEventListener("DOMContentLoaded", () => {
             prone: false,
             stunned: false,
             unconscious: false
+        },
+        turnDamageRecords: {
+            action: 0,
+            reaction: 0,
+            bonusAction: 0,
+            other: 0
         }
     };
 
@@ -70,7 +102,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     conditions: {
                         ...DEFAULT_STATE.conditions,
                         ...(parsed.conditions || {})
-                    }
+                    },
+                    turnActions: {
+                        ...DEFAULT_STATE.turnActions,
+                        ...(parsed.turnActions || {})
+                    },
+                    turnDamageRecords: {
+                        ...DEFAULT_STATE.turnDamageRecords,
+                        ...(parsed.turnDamageRecords || {})
+                    },
+                    roundHistory: parsed.roundHistory || []
                 };
                 // Sanity check: HP không được vượt quá Max HP hoặc âm
                 merged.hpMax = DEFAULT_STATE.hpMax; // luôn dùng giá trị cứng từ code
@@ -92,19 +133,208 @@ document.addEventListener("DOMContentLoaded", () => {
     // Khởi đầu stack nộ bằng 0 khi tải trang
     character.wrathStack = 0;
 
+    // Hàm tính AC động dựa vào trạng thái giáp và khiên phép
+    function updateAC() {
+        let dexMod = 2; // Ragna DEX 14 (+2)
+        let baseAC = 15 + dexMod; // Cả hai bộ giáp đều có base AC 15 + DEX modifier (+2)
+        let totalAC = baseAC + 1 /* Cloak of Protection */ + 1 /* Cường hóa +1 Armor chung */;
+        if (character.shieldActive) {
+            totalAC += 5;
+        }
+        character.ac = totalAC;
+    }
+
+
+
+    // Kiểm tra URL parameters để xác định có bắt đầu trận đấu mới không
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("combat") === "start") {
+        character.currentTurn = 1;
+        character.roundHistory = [];
+        character.wrathStack = 0;
+        character.shieldActive = false;
+        updateAC();
+        character.turnDamageRecords = {
+            action: 0,
+            reaction: 0,
+            bonusAction: 0,
+            other: 0
+        };
+        saveCharacterState();
+        
+        // Làm sạch URL
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
+
     // Cache các element DOM liên quan đến HP
     const combatCurrentHp = document.getElementById("combat-current-hp");
+    const combatMaxHp = document.getElementById("combat-max-hp");
     const combatTempHp = document.getElementById("combat-temp-hp");
     const tempHpDisplay = document.getElementById("temp-hp-display");
     const combatHpBarFill = document.getElementById("combat-hp-bar-fill");
     const combatTempBarFill = document.getElementById("combat-temp-bar-fill");
     const hpInputValue = document.getElementById("hp-input-value");
 
+    // Lưu trữ trạng thái tài nguyên lúc bắt đầu lượt để đối chiếu
+    let turnStartState = {
+        hpCurrent: character.hpCurrent,
+        hpTemp: character.hpTemp,
+        pactSlotsCurrent: character.pactSlotsCurrent,
+        resources: JSON.parse(JSON.stringify(character.resources))
+    };
+
+    function captureTurnStartState() {
+        turnStartState = {
+            hpCurrent: character.hpCurrent,
+            hpTemp: character.hpTemp,
+            pactSlotsCurrent: character.pactSlotsCurrent,
+            resources: JSON.parse(JSON.stringify(character.resources))
+        };
+    }
+
+    // Hàm hiển thị Lịch sử lượt đấu
+    function renderRoundHistoryUI() {
+        const roundHistoryList = document.getElementById("round-history-list");
+        const currentTurnDisplay = document.getElementById("current-turn-display");
+
+        if (currentTurnDisplay) {
+            currentTurnDisplay.textContent = character.currentTurn || 1;
+        }
+
+        if (!roundHistoryList) return;
+
+        const history = character.roundHistory || [];
+        if (history.length === 0) {
+            roundHistoryList.innerHTML = `
+                <div class="no-history-placeholder" style="color: var(--color-text-muted); font-size: 0.8rem; font-style: italic; text-align: center; padding: 15px 0;">
+                    Chưa có lịch sử lượt đấu. Nhấn 'Next Turn' để ghi nhận.
+                </div>
+            `;
+            return;
+        }
+
+        let html = "";
+        for (let index = history.length - 1; index >= 0; index--) {
+            const round = history[index];
+            // Tách biệt các hành động từ bản ghi cũ hoặc mới để hiển thị đúng dòng riêng lẻ
+            let actionsHtml = "";
+            let actionText = round.action || null;
+            let bonusActionText = round.bonusAction || null;
+            let reactionText = round.reaction || null;
+            let movementText = round.movement || null;
+
+            if (round.actions && round.actions.length > 0) {
+                round.actions.forEach(act => {
+                    if (act.toLowerCase().includes("bonus action")) {
+                        const match = act.match(/\(([^)]+)\)/);
+                        bonusActionText = match ? match[1] : "Sử dụng";
+                    } else if (act.toLowerCase().includes("reaction")) {
+                        const match = act.match(/\(([^)]+)\)/);
+                        reactionText = match ? match[1] : "Sử dụng";
+                    } else if (act.toLowerCase().includes("movement") || act.toLowerCase().includes("di chuyển")) {
+                        movementText = "Di chuyển (Tối đa 30 ft)";
+                    } else {
+                        actionText = act;
+                    }
+                });
+            }
+
+            // Hiển thị từng dòng hành động riêng lẻ nếu có
+            if (actionText) {
+                actionsHtml += `
+                    <div class="round-detail-row">
+                        <span class="round-detail-icon">⚔️</span>
+                        <span class="round-detail-text"><strong>Action:</strong> ${actionText}</span>
+                    </div>
+                `;
+            }
+            if (bonusActionText) {
+                actionsHtml += `
+                    <div class="round-detail-row">
+                        <span class="round-detail-icon">✨</span>
+                        <span class="round-detail-text"><strong>Bonus Action:</strong> ${bonusActionText}</span>
+                    </div>
+                `;
+            }
+            if (reactionText) {
+                actionsHtml += `
+                    <div class="round-detail-row">
+                        <span class="round-detail-icon">🛡️</span>
+                        <span class="round-detail-text"><strong>Reaction:</strong> ${reactionText}</span>
+                    </div>
+                `;
+            }
+            if (movementText) {
+                actionsHtml += `
+                    <div class="round-detail-row">
+                        <span class="round-detail-icon">🏃</span>
+                        <span class="round-detail-text"><strong>Move:</strong> ${movementText}</span>
+                    </div>
+                `;
+            }
+
+            let resourcesHtml = "";
+            if (round.resourcesSpent && round.resourcesSpent.length > 0) {
+                resourcesHtml = `
+                    <div class="round-detail-row">
+                        <span class="round-detail-icon">💎</span>
+                        <span class="round-detail-text"><strong>Tài nguyên:</strong> ${round.resourcesSpent.join(", ")}</span>
+                    </div>
+                `;
+            }
+
+            let hpChangesHtml = "";
+            if (round.hpChanges) {
+                hpChangesHtml = `
+                    <div class="round-detail-row">
+                        <span class="round-detail-icon">❤️</span>
+                        <span class="round-detail-text"><strong>Sinh lực:</strong> ${round.hpChanges}</span>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div class="round-card-item">
+                    <div class="round-card-header">
+                        <div class="round-card-title-row">
+                            <span class="round-card-title">LƯỢT ${round.round}</span>
+                            <button class="round-card-delete-btn" data-index="${index}" title="Xóa lượt này">&times;</button>
+                        </div>
+                        <span class="round-card-dmg">${round.damage} DMG</span>
+                    </div>
+                    <div class="round-card-details">
+                        ${actionsHtml}
+                        ${resourcesHtml}
+                        ${hpChangesHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        roundHistoryList.innerHTML = html;
+
+        // Đăng ký sự kiện nút xóa lượt
+        roundHistoryList.querySelectorAll(".round-card-delete-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const idx = parseInt(btn.getAttribute("data-index"));
+                if (!isNaN(idx)) {
+                    character.roundHistory.splice(idx, 1);
+                    saveCharacterState();
+                    updateHpUI();
+                    triggerStatusNotification("Đã xóa bản ghi lượt đấu!");
+                }
+            });
+        });
+    }
+
     // Hàm cập nhật giao diện HP và lưu trạng thái
     function updateHpUI(damageTaken = false) {
         // Đồng bộ dữ liệu
 
         if (combatCurrentHp) combatCurrentHp.textContent = character.hpCurrent;
+        if (combatMaxHp) combatMaxHp.textContent = character.hpMax;
         if (combatTempHp) combatTempHp.textContent = character.hpTemp;
 
         if (tempHpDisplay) {
@@ -127,6 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Cập nhật AC
+        updateAC();
         const acDisplay = document.querySelector("#combat-ac-box .badge-value");
         if (acDisplay) {
             acDisplay.textContent = character.ac;
@@ -142,8 +373,26 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
+
+
+        // Ẩn/hiện các Reaction đặc trưng của giáp Bulwark
+        const bulwarkReductionRow = document.getElementById("reaction-item-bulwark-reduction");
+        const bulwarkResistRow = document.getElementById("reaction-item-bulwark-resist");
+        const isBulwark = character.equippedArmor === "bulwark";
+        if (bulwarkReductionRow) {
+            bulwarkReductionRow.style.display = isBulwark ? "flex" : "none";
+        }
+        if (bulwarkResistRow) {
+            bulwarkResistRow.style.display = isBulwark ? "flex" : "none";
+        }
+
         // Đồng bộ các checkbox tài nguyên
         syncResourcesUI();
+        
+        // Đồng bộ các checkbox lượt đi (Action, Bonus, Reaction, Move)
+        if (typeof syncTurnCheckboxesUI === "function") {
+            syncTurnCheckboxesUI();
+        }
 
         // Cập nhật các nút Bonus Action & Reaction
         if (typeof syncBonusActionsButtons === "function") {
@@ -157,6 +406,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (damageTaken) {
             triggerDamageFlash();
         }
+
+        // Cập nhật Lịch sử lượt đấu
+        renderRoundHistoryUI();
     }
 
     // Hiệu ứng giật rung lắc màn hình và nháy đỏ viền khi dính đòn
@@ -239,6 +491,13 @@ document.addEventListener("DOMContentLoaded", () => {
         character.resources.curse = false;
         character.resources.maskThoughts = false;
         
+        for (let i = 1; i <= 3; i++) {
+            if (strikeStates[i]) {
+                strikeStates[i].addons.curse = false;
+            }
+        }
+        document.querySelectorAll('.chk-strike-addon[data-addon="curse"]').forEach(chk => chk.checked = false);
+        
         // Reset Wrath Stack
         character.wrathStack = 0;
         currentWrathStack = 0;
@@ -246,10 +505,11 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Reset Shield
         character.shieldActive = false;
-        character.ac = 19;
+        updateAC();
 
         saveCharacterState();
         updateHpUI();
+        updateTotalDicePool();
         triggerStatusNotification(`Nghỉ ngắn thành công! Hồi ${healAmt} HP (Tung 2d8+6). Đã hồi lại toàn bộ Spell Slots, Hexblade's Curse, Mask Thoughts và Reset Wrath Stack.`);
     });
 
@@ -263,6 +523,13 @@ document.addEventListener("DOMContentLoaded", () => {
             character.resources[key] = false;
         }
 
+        for (let i = 1; i <= 3; i++) {
+            if (strikeStates[i]) {
+                strikeStates[i].addons.curse = false;
+            }
+        }
+        document.querySelectorAll('.chk-strike-addon[data-addon="curse"]').forEach(chk => chk.checked = false);
+
         // Reset Wrath Stack
         character.wrathStack = 0;
         currentWrathStack = 0;
@@ -270,10 +537,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Reset Shield
         character.shieldActive = false;
-        character.ac = 19;
+        updateAC();
 
         saveCharacterState();
         updateHpUI();
+        updateTotalDicePool();
         triggerStatusNotification("Nghỉ dài thành công! Hồi đầy HP, THP về 0, khôi phục toàn bộ tài nguyên, phép thuật và Reset Wrath Stack.");
     });
 
@@ -716,6 +984,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const diceCritText = document.getElementById("dice-crit-text");
     const btnCloseDiceModal = document.getElementById("btn-close-dice-modal");
     const btnDismissRoll = document.getElementById("btn-dismiss-roll");
+    
+    // Opportunity Attack DOM Elements & State
+    const diceModalOaButtons = document.getElementById("dice-modal-oa-buttons");
+    const btnOaHit = document.getElementById("btn-oa-hit");
+    const btnOaMiss = document.getElementById("btn-oa-miss");
+    const diceModalOaDamageSetup = document.getElementById("dice-modal-oa-damage-setup");
+    const oaDamageDiceExpression = document.getElementById("oa-damage-dice-expression");
+    const btnOaCritToggle = document.getElementById("btn-oa-crit-toggle");
+    const btnOaRollDamage = document.getElementById("btn-oa-roll-damage");
+
+    let lastOARoll = { isCrit: false, die: 0, total: 0 };
+    let oaIsCrit = false;
 
     function hideDiceModal() {
         gsap.to(diceModal, {
@@ -735,7 +1015,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnDismissRoll) btnDismissRoll.addEventListener("click", hideDiceModal);
     if (diceModalOverlay) {
         diceModalOverlay.addEventListener("click", (e) => {
-            if (e.target === diceModalOverlay) hideDiceModal();
+            if (e.target === diceModalOverlay) {
+                // If OA buttons or OA Damage Setup are active, don't allow closing via click-outside
+                const isOaActive = (diceModalOaButtons && diceModalOaButtons.style.display === "flex") || 
+                                   (diceModalOaDamageSetup && diceModalOaDamageSetup.style.display === "flex");
+                if (isOaActive) return;
+                hideDiceModal();
+            }
         });
     }
 
@@ -743,7 +1029,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return Math.floor(Math.random() * sides) + 1;
     }
 
-    function triggerRollAnimation({ title, subtitle, rollAction }) {
+    function triggerRollAnimation({ title, subtitle, rollAction, isOA = false, hideVisual = false }) {
         if (!diceModalOverlay) return;
         diceModalOverlay.style.display = "flex";
         diceModalOverlay.classList.remove("show-result");
@@ -752,6 +1038,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (diceRollSubtitle) diceRollSubtitle.textContent = subtitle.toUpperCase();
         if (diceCritText) diceCritText.textContent = "";
         if (diceNumberText) diceNumberText.textContent = "?";
+        
+        // Hide elements during roll
+        if (diceModalOaButtons) diceModalOaButtons.style.display = "none";
+        if (btnDismissRoll) btnDismissRoll.style.display = "none";
+        if (btnCloseDiceModal) btnCloseDiceModal.style.display = "none";
+        if (diceModalOaDamageSetup) diceModalOaDamageSetup.style.display = "none";
+        
+        // Hide or show the dice graphic container (d20 SVG visual)
+        const graphicContainer = document.querySelector(".dice-graphic-container");
+        if (graphicContainer) {
+            graphicContainer.style.display = hideVisual ? "none" : "block";
+        }
         
         gsap.fromTo(diceModal, 
             { scale: 0.85, opacity: 0 },
@@ -809,6 +1107,17 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             diceModalOverlay.classList.add("show-result");
+            
+            // Show appropriate buttons after the roll is done
+            if (isOA) {
+                if (diceModalOaButtons) diceModalOaButtons.style.display = "flex";
+                if (btnDismissRoll) btnDismissRoll.style.display = "none";
+                if (btnCloseDiceModal) btnCloseDiceModal.style.display = "none";
+            } else {
+                if (diceModalOaButtons) diceModalOaButtons.style.display = "none";
+                if (btnDismissRoll) btnDismissRoll.style.display = "inline-block"; // Center by being inline-block under text-align: center
+                if (btnCloseDiceModal) btnCloseDiceModal.style.display = "block";
+            }
         }, 800);
     }
 
@@ -1066,6 +1375,11 @@ document.addEventListener("DOMContentLoaded", () => {
             activeDamageBreakdown = rollResult.breakdown;
 
             updateDamageDisplay();
+            
+            // Record action damage
+            character.turnDamageRecords.action = rollResult.totalDmg;
+            saveCharacterState();
+
             triggerStatusNotification(`Đã roll tổng sát thương: ${rollResult.totalDmg} DMG!`);
         });
     }
@@ -1096,6 +1410,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     setTimeout(() => {
                         updateDamageDisplay();
                     }, 800);
+
+                    // Accumulate single strike damage to action damage
+                    character.turnDamageRecords.action = (character.turnDamageRecords.action || 0) + rollResult.totalDmg;
+                    saveCharacterState();
 
                     return {
                         dieResult: rollResult.totalDmgDiceOnly,
@@ -1139,10 +1457,14 @@ document.addEventListener("DOMContentLoaded", () => {
         combatAcBox.style.cursor = "pointer";
         combatAcBox.addEventListener("click", () => {
             character.shieldActive = !character.shieldActive;
-            character.ac = character.shieldActive ? 24 : 19;
+            updateAC();
+            if (character.turnActions) {
+                character.turnActions.shield = character.shieldActive;
+                if (character.shieldActive) character.turnActions.reactionChecked = true;
+            }
             saveCharacterState();
             updateHpUI();
-            triggerStatusNotification(character.shieldActive ? "Kích hoạt Khiên phép Shield! AC tăng thành 24 (+5)." : "Huỷ kích hoạt Khiên phép Shield. AC trở lại 19.");
+            triggerStatusNotification(character.shieldActive ? `Kích hoạt Khiên phép Shield! AC tăng thành ${character.ac} (+5).` : `Huỷ kích hoạt Khiên phép Shield. AC trở lại ${character.ac}.`);
         });
     }
 
@@ -1174,48 +1496,369 @@ document.addEventListener("DOMContentLoaded", () => {
     const chkBonus = document.getElementById("chk-bonus");
     const chkReaction = document.getElementById("chk-reaction");
     const chkMovement = document.getElementById("chk-movement");
-    const btnResetTurn = document.getElementById("btn-reset-turn");
 
-    if (btnResetTurn) {
-        btnResetTurn.addEventListener("click", () => {
-            if (chkAction) chkAction.checked = true;
-            if (chkBonus) chkBonus.checked = false;
-            if (chkReaction) chkReaction.checked = false;
-            if (chkMovement) chkMovement.checked = false;
+    function syncTurnCheckboxesUI() {
+        if (chkAction) chkAction.checked = !!(character.turnActions && character.turnActions.actionChecked);
+        if (chkBonus) chkBonus.checked = !!(character.turnActions && character.turnActions.bonusChecked);
+        if (chkReaction) chkReaction.checked = !!(character.turnActions && character.turnActions.reactionChecked);
+        if (chkMovement) chkMovement.checked = !!(character.turnActions && character.turnActions.movementChecked);
+    }
 
-            for (let i = 1; i <= 3; i++) {
-                strikeStates[i].state = "none";
-                strikeStates[i].crit = false;
-                strikeStates[i].addons.hex = false;
-                strikeStates[i].addons.smite = false;
-                strikeStates[i].addons.curse = false;
+    if (chkAction) {
+        chkAction.addEventListener("change", () => {
+            character.turnActions.actionChecked = chkAction.checked;
+            saveCharacterState();
+        });
+    }
+    if (chkBonus) {
+        chkBonus.addEventListener("change", () => {
+            character.turnActions.bonusChecked = chkBonus.checked;
+            saveCharacterState();
+        });
+    }
+    if (chkReaction) {
+        chkReaction.addEventListener("change", () => {
+            character.turnActions.reactionChecked = chkReaction.checked;
+            saveCharacterState();
+        });
+    }
+    if (chkMovement) {
+        chkMovement.addEventListener("change", () => {
+            character.turnActions.movementChecked = chkMovement.checked;
+            saveCharacterState();
+        });
+    }
 
-                const rowEl = document.getElementById(`strike-${i}`);
-                if (rowEl) {
-                    const hitBtn = rowEl.querySelector(".btn-strike-toggle.hit");
-                    const missBtn = rowEl.querySelector(".btn-strike-toggle.miss");
-                    const critBtn = rowEl.querySelector(".btn-strike-toggle.crit");
-                    if (hitBtn) hitBtn.classList.remove("active");
-                    if (missBtn) missBtn.classList.remove("active");
-                    if (critBtn) {
-                        critBtn.classList.remove("active");
-                        critBtn.disabled = true;
+    function executeTurnReset() {
+        // 1. Gather resource usage of current round
+        const totalDmg = (character.turnDamageRecords.action || 0) + 
+                         (character.turnDamageRecords.reaction || 0) + 
+                         (character.turnDamageRecords.bonusAction || 0) + 
+                         (character.turnDamageRecords.other || 0);
+        
+        let actionLog = null;
+        if (chkAction && chkAction.checked) {
+            const actionType = document.querySelector('input[name="combat-action-type"]:checked')?.value || 'attack';
+            if (actionType === 'attack') {
+                const wp = weaponsConfig[activeWeaponKey]?.name || "vũ khí";
+                let strikesText = [];
+                for (let i = 1; i <= 3; i++) {
+                    const st = strikeStates[i];
+                    if (st && st.state !== 'none') {
+                        strikesText.push(`Đòn ${i}: ${st.state === 'hit' ? (st.crit ? 'Crit' : 'Trúng') : 'Hụt'}`);
                     }
-                    rowEl.querySelectorAll(".chk-strike-addon").forEach(chk => chk.checked = false);
                 }
+                actionLog = `Tấn công (${wp}${strikesText.length > 0 ? ': ' + strikesText.join(', ') : ''})`;
+            } else {
+                const typeLabels = {
+                    spell: "Cast Spell",
+                    dash: "Dash",
+                    disengage: "Disengage",
+                    dodge: "Dodge",
+                    hide: "Hide (Ẩn nấp)",
+                    search: "Search (Tìm kiếm)",
+                    useobj: "Use Object"
+                };
+                actionLog = `${typeLabels[actionType] || actionType}`;
             }
+            
+            // Append damage details to action log
+            if (character.turnDamageRecords.action > 0) {
+                actionLog += ` - ${character.turnDamageRecords.action} DMG`;
+            }
+        }
 
-            document.querySelectorAll('.action-type-btn').forEach(btn => {
-                btn.classList.remove('active');
-                btn.querySelector('input').checked = false;
-            });
-            document.querySelectorAll('.action-sub-panel').forEach(panel => panel.classList.remove('active'));
+        let bonusActionLog = null;
+        if (chkBonus && chkBonus.checked) {
+            let bonusLabels = [];
+            if (character.turnActions && character.turnActions.curse) {
+                bonusLabels.push("Hexblade's Curse");
+            }
+            if (character.turnActions && character.turnActions.maskThoughts) {
+                bonusLabels.push("Surface Echo");
+            }
+            if (character.turnActions && character.turnActions.kimonoHunt) {
+                bonusLabels.push("Command Word: Hunt");
+            }
+            if (character.turnActions && character.turnActions.repel) {
+                bonusLabels.push("Command Word: Repel");
+            }
+            if (character.turnActions && character.turnActions.pact) {
+                bonusLabels.push("Triệu hồi Pact Weapon");
+            }
+            bonusActionLog = bonusLabels.length > 0 ? `${bonusLabels.join(', ')}` : "Bonus Action (Sử dụng)";
+            if (character.turnDamageRecords.bonusAction > 0) {
+                bonusActionLog += ` - ${character.turnDamageRecords.bonusAction} DMG`;
+            }
+        }
 
-            updateTotalDicePool();
-            activeDamageBreakdown = {};
-            updateDamageDisplay();
+        let reactionLog = null;
+        if (chkReaction && chkReaction.checked) {
+            let rxLabels = [];
+            if (character.turnActions && character.turnActions.shield) {
+                rxLabels.push("Shield");
+            }
+            if (character.turnActions && character.turnActions.counterspell) {
+                rxLabels.push("Counterspell");
+            }
+            if (character.turnActions && character.turnActions.opportunity) {
+                let label = "Opportunity Attack";
+                if (character.turnDamageRecords.reaction > 0) {
+                    label += ` - ${character.turnDamageRecords.reaction} DMG`;
+                }
+                rxLabels.push(label);
+            }
+            
+            if (character.turnDamageRecords.reaction > 0 && !character.turnActions.opportunity) {
+                reactionLog = rxLabels.length > 0 ? `${rxLabels.join(', ')} - ${character.turnDamageRecords.reaction} DMG` : `Reaction (Sử dụng) - ${character.turnDamageRecords.reaction} DMG`;
+            } else {
+                reactionLog = rxLabels.length > 0 ? `${rxLabels.join(', ')}` : "Reaction (Sử dụng)";
+            }
+        }
 
-            triggerStatusNotification("Đã đặt lại lượt đi mới và làm sạch bảng sát thương!");
+        let movementLog = null;
+        if (chkMovement && chkMovement.checked) {
+            movementLog = "Di chuyển (Tối đa 30 ft)";
+        }
+
+        // 2. Resources Spent
+        const resourcesSpent = [];
+        const spentSlots = turnStartState.pactSlotsCurrent - character.pactSlotsCurrent;
+        if (spentSlots > 0) {
+            resourcesSpent.push(`${spentSlots}x Pact Slot Bậc 4`);
+        }
+        
+        const resourceNames = {
+            curse: "Hexblade's Curse",
+            specter: "Specter Companion",
+            cunning: "Magical Cunning",
+            maskDisguise1: "Mask Disguise (Veil 1)",
+            maskDisguise2: "Mask Disguise (Veil 2)",
+            maskThoughts: "Surface Echo",
+            kimonoHunt: "Command Word: Hunt",
+            seedLife: "Seed Life Pulse",
+            graspless1: "Graspless FF (Lượt 1)",
+            graspless2: "Graspless FF (Lượt 2)",
+            graspless3: "Graspless FF (Lượt 3)"
+        };
+
+        for (const key in character.resources) {
+            if (character.resources[key] && !turnStartState.resources[key]) {
+                resourcesSpent.push(resourceNames[key] || key);
+            }
+        }
+
+        // 3. HP changes
+        let hpChanges = "";
+        const hpDiff = character.hpCurrent - turnStartState.hpCurrent;
+        const thpDiff = character.hpTemp - turnStartState.hpTemp;
+        
+        let hpParts = [];
+        if (hpDiff < 0) {
+            hpParts.push(`${hpDiff} HP`);
+        } else if (hpDiff > 0) {
+            hpParts.push(`+${hpDiff} HP`);
+        }
+
+        if (thpDiff > 0) {
+            hpParts.push(`+${thpDiff} Temp HP`);
+        } else if (thpDiff < 0) {
+            hpParts.push(`${thpDiff} Temp HP`);
+        }
+
+        if (hpParts.length > 0) {
+            hpChanges = `${hpParts.join(", ")} (Hiện tại: ${character.hpCurrent}/${character.hpMax}${character.hpTemp > 0 ? ` + ${character.hpTemp} THP` : ''})`;
+        } else {
+            hpChanges = `Không đổi (Hiện tại: ${character.hpCurrent}/${character.hpMax}${character.hpTemp > 0 ? ` + ${character.hpTemp} THP` : ''})`;
+        }
+
+        // 4. Construct round history entry and push
+        const roundEntry = {
+            round: character.currentTurn || 1,
+            damage: totalDmg,
+            action: actionLog,
+            bonusAction: bonusActionLog,
+            reaction: reactionLog,
+            movement: movementLog,
+            resourcesSpent: resourcesSpent,
+            hpChanges: hpChanges
+        };
+
+        if (!character.roundHistory) character.roundHistory = [];
+        character.roundHistory.push(roundEntry);
+
+        // 5. Reset turn manager actions
+        if (chkAction) chkAction.checked = true;
+        if (chkBonus) chkBonus.checked = false;
+        if (chkReaction) chkReaction.checked = false;
+        if (chkMovement) chkMovement.checked = false;
+
+        const hasCurse = !!character.resources.curse;
+        for (let i = 1; i <= 3; i++) {
+            strikeStates[i].state = "none";
+            strikeStates[i].crit = false;
+            strikeStates[i].addons.kimonoHunt = false;
+            strikeStates[i].addons.smite = false;
+            strikeStates[i].addons.curse = hasCurse;
+
+            const rowEl = document.getElementById(`strike-${i}`);
+            if (rowEl) {
+                const hitBtn = rowEl.querySelector(".btn-strike-toggle.hit");
+                const missBtn = rowEl.querySelector(".btn-strike-toggle.miss");
+                const critBtn = rowEl.querySelector(".btn-strike-toggle.crit");
+                if (hitBtn) hitBtn.classList.remove("active");
+                if (missBtn) missBtn.classList.remove("active");
+                if (critBtn) {
+                    critBtn.classList.remove("active");
+                    critBtn.disabled = true;
+                }
+                rowEl.querySelectorAll(".chk-strike-addon").forEach(chk => {
+                    const addonName = chk.getAttribute("data-addon");
+                    if (addonName === "curse") {
+                        chk.checked = hasCurse;
+                    } else {
+                        chk.checked = false;
+                    }
+                });
+            }
+        }
+
+        document.querySelectorAll('.action-type-btn').forEach(btn => {
+            btn.classList.remove('active');
+            btn.querySelector('input').checked = false;
+        });
+        document.querySelectorAll('.action-sub-panel').forEach(panel => panel.classList.remove('active'));
+
+        updateTotalDicePool();
+        activeDamageBreakdown = {};
+        updateDamageDisplay();
+
+        // 6. Increment current turn
+        character.currentTurn = (character.currentTurn || 1) + 1;
+        
+        // Reset temporary turn actions for next turn
+        if (character.turnActions) {
+            character.turnActions.pact = false;
+            character.turnActions.repel = false;
+            character.turnActions.counterspell = false;
+            character.turnActions.opportunity = false;
+            character.turnActions.curse = false;
+            character.turnActions.maskThoughts = false;
+            character.turnActions.kimonoHunt = false;
+            character.turnActions.shield = false;
+            character.turnActions.kasaLeap = false;
+            character.turnActions.bulwarkReduction = false;
+            character.turnActions.bulwarkResist = false;
+            character.turnActions.actionChecked = true;
+            character.turnActions.bonusChecked = false;
+            character.turnActions.reactionChecked = false;
+            character.turnActions.movementChecked = false;
+        }
+
+        // Reset turn damage records for the next turn
+        character.turnDamageRecords = {
+            action: 0,
+            reaction: 0,
+            bonusAction: 0,
+            other: 0
+        };
+
+        // 7. Save state and update UI
+        saveCharacterState();
+        updateHpUI();
+        
+        // 8. Capture new turnStartState
+        captureTurnStartState();
+
+        triggerStatusNotification(`Đã kết thúc Lượt ${roundEntry.round}. Bắt đầu Lượt ${character.currentTurn}!`);
+    }
+
+    const btnResetTurn = document.getElementById("btn-reset-turn");
+    if (btnResetTurn) {
+        btnResetTurn.addEventListener("click", executeTurnReset);
+    }
+
+    const btnResetTurnLarge = document.getElementById("btn-reset-turn-large");
+    if (btnResetTurnLarge) {
+        btnResetTurnLarge.addEventListener("click", executeTurnReset);
+    }
+
+    // Reset Combat logic
+    const btnResetCombat = document.getElementById("btn-reset-combat");
+    if (btnResetCombat) {
+        btnResetCombat.addEventListener("click", () => {
+            if (confirm("Bạn có chắc chắn muốn kết thúc trận đấu và đặt lại toàn bộ lịch sử lượt về Lượt 1?")) {
+                character.currentTurn = 1;
+                character.roundHistory = [];
+                character.wrathStack = 0;
+                character.shieldActive = false;
+                character.ac = 19;
+                
+                if (character.turnActions) {
+                    character.turnActions.pact = false;
+                    character.turnActions.repel = false;
+                    character.turnActions.counterspell = false;
+                    character.turnActions.opportunity = false;
+                    character.turnActions.curse = false;
+                    character.turnActions.maskThoughts = false;
+                    character.turnActions.kimonoHunt = false;
+                    character.turnActions.shield = false;
+                    character.turnActions.actionChecked = true;
+                    character.turnActions.bonusChecked = false;
+                    character.turnActions.reactionChecked = false;
+                    character.turnActions.movementChecked = false;
+                }
+                
+                if (chkAction) chkAction.checked = true;
+                if (chkBonus) chkBonus.checked = false;
+                if (chkReaction) chkReaction.checked = false;
+                if (chkMovement) chkMovement.checked = false;
+
+                for (let i = 1; i <= 3; i++) {
+                    strikeStates[i].state = "none";
+                    strikeStates[i].crit = false;
+                    strikeStates[i].addons.kimonoHunt = false;
+                    strikeStates[i].addons.smite = false;
+                    strikeStates[i].addons.curse = false;
+
+                    const rowEl = document.getElementById(`strike-${i}`);
+                    if (rowEl) {
+                        const hitBtn = rowEl.querySelector(".btn-strike-toggle.hit");
+                        const missBtn = rowEl.querySelector(".btn-strike-toggle.miss");
+                        const critBtn = rowEl.querySelector(".btn-strike-toggle.crit");
+                        if (hitBtn) hitBtn.classList.remove("active");
+                        if (missBtn) missBtn.classList.remove("active");
+                        if (critBtn) {
+                            critBtn.classList.remove("active");
+                            critBtn.disabled = true;
+                        }
+                        rowEl.querySelectorAll(".chk-strike-addon").forEach(chk => chk.checked = false);
+                    }
+                }
+
+                document.querySelectorAll('.action-type-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.querySelector('input').checked = false;
+                });
+                document.querySelectorAll('.action-sub-panel').forEach(panel => panel.classList.remove('active'));
+
+                updateTotalDicePool();
+                activeDamageBreakdown = {};
+                updateDamageDisplay();
+
+                character.turnDamageRecords = {
+                    action: 0,
+                    reaction: 0,
+                    bonusAction: 0,
+                    other: 0
+                };
+
+                saveCharacterState();
+                updateHpUI();
+                captureTurnStartState();
+                
+                triggerStatusNotification("Đã đặt lại trận đấu về Lượt 1!");
+            }
         });
     }
 
@@ -1379,6 +2022,97 @@ document.addEventListener("DOMContentLoaded", () => {
                 itemShield.classList.remove("active");
             }
         }
+
+        const btnPact = document.getElementById("btn-use-pact");
+        if (btnPact) {
+            const isUsed = !!(character.turnActions && character.turnActions.pact);
+            const parent = btnPact.closest(".bonus-action-item");
+            if (isUsed) {
+                btnPact.textContent = "HUỶ DÙNG";
+                if (parent) parent.classList.add("active");
+            } else {
+                btnPact.textContent = "TRIỆU HỒI";
+                if (parent) parent.classList.remove("active");
+            }
+        }
+
+        const btnRepel = document.getElementById("btn-use-repel");
+        if (btnRepel) {
+            const isUsed = !!(character.turnActions && character.turnActions.repel);
+            const parent = btnRepel.closest(".bonus-action-item");
+            if (isUsed) {
+                btnRepel.textContent = "HUỶ DÙNG";
+                if (parent) parent.classList.add("active");
+            } else {
+                btnRepel.textContent = "KÍCH HOẠT";
+                if (parent) parent.classList.remove("active");
+            }
+        }
+
+        const btnCounterspell = document.getElementById("btn-use-counterspell");
+        if (btnCounterspell) {
+            const isUsed = !!(character.turnActions && character.turnActions.counterspell);
+            const parent = btnCounterspell.closest(".reaction-action-item");
+            if (isUsed) {
+                btnCounterspell.textContent = "HUỶ DÙNG";
+                if (parent) parent.classList.add("active");
+            } else {
+                btnCounterspell.textContent = "CAST COUNTERSPELL";
+                if (parent) parent.classList.remove("active");
+            }
+        }
+
+        const btnOpportunity = document.getElementById("btn-use-opportunity-attack");
+        if (btnOpportunity) {
+            const isUsed = !!(character.turnActions && character.turnActions.opportunity);
+            const parent = btnOpportunity.closest(".reaction-action-item");
+            if (isUsed) {
+                btnOpportunity.textContent = "HUỶ DÙNG";
+                if (parent) parent.classList.add("active");
+            } else {
+                btnOpportunity.textContent = "TẤN CÔNG CƠ HỘI";
+                if (parent) parent.classList.remove("active");
+            }
+        }
+
+        const btnBulwarkReduction = document.getElementById("btn-use-bulwark-reduction");
+        if (btnBulwarkReduction) {
+            const isUsed = !!(character.turnActions && character.turnActions.bulwarkReduction);
+            const parent = btnBulwarkReduction.closest(".reaction-action-item");
+            if (isUsed) {
+                btnBulwarkReduction.textContent = "HUỶ DÙNG";
+                if (parent) parent.classList.add("active");
+            } else {
+                btnBulwarkReduction.textContent = "KÍCH HOẠT";
+                if (parent) parent.classList.remove("active");
+            }
+        }
+
+        const btnBulwarkResist = document.getElementById("btn-use-bulwark-resist");
+        if (btnBulwarkResist) {
+            const isUsed = !!(character.turnActions && character.turnActions.bulwarkResist);
+            const parent = btnBulwarkResist.closest(".reaction-action-item");
+            if (isUsed) {
+                btnBulwarkResist.textContent = "HUỶ DÙNG";
+                if (parent) parent.classList.add("active");
+            } else {
+                btnBulwarkResist.textContent = "KÍCH HOẠT";
+                if (parent) parent.classList.remove("active");
+            }
+        }
+
+        const btnKasaLeapBonus = document.getElementById("btn-use-kasa-leap-bonus");
+        if (btnKasaLeapBonus) {
+            const isUsed = !!(character.turnActions && character.turnActions.kasaLeap);
+            const parent = btnKasaLeapBonus.closest(".bonus-action-item");
+            if (isUsed) {
+                btnKasaLeapBonus.textContent = "HUỶ DÙNG";
+                if (parent) parent.classList.add("active");
+            } else {
+                btnKasaLeapBonus.textContent = "KÍCH HOẠT";
+                if (parent) parent.classList.remove("active");
+            }
+        }
     }
 
     // Đăng ký sự kiện click cho các nút Bonus Action mới
@@ -1387,10 +2121,28 @@ document.addEventListener("DOMContentLoaded", () => {
         btnUseCurse.addEventListener("click", () => {
             const isUsed = !character.resources.curse;
             character.resources.curse = isUsed;
+            character.turnActions.curse = isUsed;
+            if (isUsed && chkBonus) {
+                chkBonus.checked = true;
+                character.turnActions.bonusChecked = true;
+            }
+            
+            // Auto-check/uncheck strike checkboxes for Curse
+            for (let i = 1; i <= 3; i++) {
+                if (strikeStates[i]) {
+                    strikeStates[i].addons.curse = isUsed;
+                }
+            }
+            document.querySelectorAll('.chk-strike-addon[data-addon="curse"]').forEach(chk => {
+                chk.checked = isUsed;
+            });
+            
             saveCharacterState();
             updateHpUI();
+            updateTotalDicePool();
+            
             if (isUsed) {
-                triggerStatusNotification("Kích hoạt Hexblade's Curse! Thêm +3 sát thương (Curse) và Crit trên 19-20.");
+                triggerStatusNotification("Kích hoạt Hexblade's Curse! Thêm +3 sát thương (HB's Curse) và Crit trên 19-20.");
             } else {
                 triggerStatusNotification("Hủy kích hoạt Hexblade's Curse.");
             }
@@ -1400,7 +2152,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnUsePact = document.getElementById("btn-use-pact");
     if (btnUsePact) {
         btnUsePact.addEventListener("click", () => {
-            triggerStatusNotification("Triệu hồi/Liên kết Pact Weapon thành công! Bạn sẵn sàng tấn công bằng Mortal Wrath.");
+            const isUsed = !character.turnActions.pact;
+            character.turnActions.pact = isUsed;
+            if (isUsed && chkBonus) {
+                chkBonus.checked = true;
+                character.turnActions.bonusChecked = true;
+            }
+            saveCharacterState();
+            updateHpUI();
+            if (isUsed) {
+                triggerStatusNotification("Triệu hồi/Liên kết Pact Weapon thành công! Bạn sẵn sàng tấn công bằng Mortal Wrath.");
+            } else {
+                triggerStatusNotification("Hủy triệu hồi Pact Weapon.");
+            }
         });
     }
 
@@ -1409,10 +2173,15 @@ document.addEventListener("DOMContentLoaded", () => {
         btnUseSurface.addEventListener("click", () => {
             const isUsed = !character.resources.maskThoughts;
             character.resources.maskThoughts = isUsed;
+            character.turnActions.maskThoughts = isUsed;
+            if (isUsed && chkBonus) {
+                chkBonus.checked = true;
+                character.turnActions.bonusChecked = true;
+            }
             saveCharacterState();
             updateHpUI();
             if (isUsed) {
-                triggerStatusNotification("Kích hoạt Surface Echo! Đọc ý nghĩ bề mặt của một sinh vật trong vòng 30 ft trong 1 round.");
+                triggerStatusNotification("Kích hoạt Surface Echo! Đọc ý nghĩ bề mặt của một sinh vật trong vòng 30 ft (INT ≥ 6) trong vòng 1 round.");
             } else {
                 triggerStatusNotification("Hủy kích hoạt Surface Echo.");
             }
@@ -1422,7 +2191,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnUseRepel = document.getElementById("btn-use-repel");
     if (btnUseRepel) {
         btnUseRepel.addEventListener("click", () => {
-            triggerStatusNotification("Kích hoạt Command Word: Repel! Sinh vật trong nón 30 ft phải thực hiện Wisdom Save DC 15.");
+            const isUsed = !character.turnActions.repel;
+            character.turnActions.repel = isUsed;
+            if (isUsed && chkBonus) {
+                chkBonus.checked = true;
+                character.turnActions.bonusChecked = true;
+            }
+            saveCharacterState();
+            updateHpUI();
+            if (isUsed) {
+                triggerStatusNotification("Kích hoạt Command Word: Repel! Sinh vật trong nón 30 ft phải thực hiện Wisdom Save DC 15.");
+            } else {
+                triggerStatusNotification("Hủy kích hoạt Command Word: Repel.");
+            }
         });
     }
 
@@ -1431,6 +2212,11 @@ document.addEventListener("DOMContentLoaded", () => {
         btnUseHunt.addEventListener("click", () => {
             const isUsed = !character.resources.kimonoHunt;
             character.resources.kimonoHunt = isUsed;
+            character.turnActions.kimonoHunt = isUsed;
+            if (isUsed && chkBonus) {
+                chkBonus.checked = true;
+                character.turnActions.bonusChecked = true;
+            }
             saveCharacterState();
             updateHpUI();
             if (isUsed) {
@@ -1441,31 +2227,323 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    const btnUseKasaLeapBonus = document.getElementById("btn-use-kasa-leap-bonus");
+    if (btnUseKasaLeapBonus) {
+        btnUseKasaLeapBonus.addEventListener("click", () => {
+            const isUsed = !character.turnActions.kasaLeap;
+            character.turnActions.kasaLeap = isUsed;
+            if (isUsed && chkBonus) {
+                chkBonus.checked = true;
+                character.turnActions.bonusChecked = true;
+            }
+            saveCharacterState();
+            updateHpUI();
+            if (isUsed) {
+                triggerStatusNotification("Kích hoạt Trickster's Leap! Kasa-obake nhảy lò cò 20 feet.");
+            } else {
+                triggerStatusNotification("Hủy Trickster's Leap.");
+            }
+        });
+    }
+
     // Đăng ký sự kiện click cho các nút Reaction mới
     const btnUseShield = document.getElementById("btn-use-shield");
     if (btnUseShield) {
         btnUseShield.addEventListener("click", () => {
             character.shieldActive = !character.shieldActive;
-            character.ac = character.shieldActive ? 24 : 19;
+            updateAC();
+            character.turnActions.shield = character.shieldActive;
+            if (character.shieldActive && chkReaction) {
+                chkReaction.checked = true;
+                character.turnActions.reactionChecked = true;
+            }
             saveCharacterState();
             updateHpUI();
-            triggerStatusNotification(character.shieldActive ? "Kích hoạt Khiên phép Shield! AC tăng thành 24 (+5)." : "Huỷ kích hoạt Khiên phép Shield. AC trở lại 19.");
+            triggerStatusNotification(character.shieldActive ? `Kích hoạt Khiên phép Shield! AC tăng thành ${character.ac} (+5).` : `Huỷ kích hoạt Khiên phép Shield. AC trở lại ${character.ac}.`);
+        });
+    }
+
+    const btnUseBulwarkReduction = document.getElementById("btn-use-bulwark-reduction");
+    if (btnUseBulwarkReduction) {
+        btnUseBulwarkReduction.addEventListener("click", () => {
+            const isUsed = !character.turnActions.bulwarkReduction;
+            character.turnActions.bulwarkReduction = isUsed;
+            if (isUsed && chkReaction) {
+                chkReaction.checked = true;
+                character.turnActions.reactionChecked = true;
+            }
+            saveCharacterState();
+            updateHpUI();
+            if (isUsed) {
+                triggerStatusNotification("Kích hoạt Phản ứng: Bulwark Weapon Shield! Giảm 3 sát thương từ đòn đánh vũ khí vật lý.");
+            } else {
+                triggerStatusNotification("Hủy Phản ứng: Bulwark Weapon Shield.");
+            }
+        });
+    }
+
+    const btnUseBulwarkResist = document.getElementById("btn-use-bulwark-resist");
+    if (btnUseBulwarkResist) {
+        btnUseBulwarkResist.addEventListener("click", () => {
+            const isUsed = !character.turnActions.bulwarkResist;
+            character.turnActions.bulwarkResist = isUsed;
+            if (isUsed && chkReaction) {
+                chkReaction.checked = true;
+                character.turnActions.reactionChecked = true;
+            }
+            saveCharacterState();
+            updateHpUI();
+            if (isUsed) {
+                triggerStatusNotification("Kích hoạt Phản ứng: Bulwark Steady Body! Advantage Saving Throw chống ngã/dịch chuyển.");
+            } else {
+                triggerStatusNotification("Hủy Phản ứng: Bulwark Steady Body.");
+            }
         });
     }
 
     const btnUseCounterspell = document.getElementById("btn-use-counterspell");
     if (btnUseCounterspell) {
         btnUseCounterspell.addEventListener("click", () => {
-            if (consumePactSlot("Counterspell")) {
-                triggerStatusNotification("Kích hoạt Counterspell! Kẻ địch trong 60ft phải thực hiện Constitution Save DC 15 hoặc mất spell.");
+            const isUsed = !character.turnActions.counterspell;
+            if (isUsed) {
+                if (consumePactSlot("Counterspell")) {
+                    character.turnActions.counterspell = true;
+                    if (chkReaction) {
+                        chkReaction.checked = true;
+                        character.turnActions.reactionChecked = true;
+                    }
+                    saveCharacterState();
+                    updateHpUI();
+                    triggerStatusNotification("Kích hoạt Counterspell! Kẻ địch trong 60ft phải thực hiện Constitution Save DC 15 hoặc mất spell.");
+                }
+            } else {
+                character.turnActions.counterspell = false;
+                character.pactSlotsCurrent = Math.min(2, character.pactSlotsCurrent + 1);
+                saveCharacterState();
+                updateHpUI();
+                triggerStatusNotification("Hủy Counterspell. Đã hoàn trả lại 1 Pact Slot Bậc 4.");
             }
+        });
+    }
+
+    // Helper & Event handlers for Opportunity Attack (OA)
+    function updateOADamageExpressionLabel() {
+        if (!oaDamageDiceExpression) return;
+        const nextStack = currentWrathStack + 1;
+        const baseDice = oaIsCrit ? "4d6" : "2d6";
+        const mod = "6";
+        const necroticDice = oaIsCrit ? `${2 * nextStack}d4` : `${nextStack}d4`;
+        
+        let expr = `${baseDice} + ${mod} + ${necroticDice} necrotic`;
+        if (character.resources.curse) {
+            expr += " + 3 [HB's Curse]";
+        }
+        oaDamageDiceExpression.textContent = expr;
+    }
+
+    function rollOADamage(isCrit) {
+        // Tăng stack nộ lên 1
+        currentWrathStack++;
+        character.wrathStack = currentWrathStack;
+        saveCharacterState();
+        updateWrathStackUI();
+        updateTotalDicePool();
+
+        const wp = weaponsConfig[activeWeaponKey] || { name: "Mortal Wrath", dice: "2d6", mod: 6, type: "Slashing" };
+        const primaryType = (wp.type.includes("&") ? wp.type.split("&")[0].trim() : wp.type).toLowerCase();
+        
+        let breakdown = {
+            slashing: 0,
+            piercing: 0,
+            cold: 0,
+            necrotic: 0,
+            radiant: 0,
+            force: 0,
+            psychic: 0
+        };
+        
+        let diceRecord = [];
+        let totalDmgDiceOnly = 0;
+        let totalFlatMod = 0;
+
+        // Base Greatsword Damage: 2d6 (hoặc 4d6 nếu Crit)
+        const baseDiceCount = 2 * (isCrit ? 2 : 1);
+        let baseSum = 0;
+        let baseRolls = [];
+        for (let i = 0; i < baseDiceCount; i++) {
+            const r = Math.floor(Math.random() * 6) + 1;
+            baseRolls.push(r);
+            baseSum += r;
+        }
+        breakdown[primaryType] += baseSum;
+        totalDmgDiceOnly += baseSum;
+        diceRecord.push(`${baseDiceCount}d6 (${baseRolls.join("+")}) [Mortal Wrath]`);
+
+        // Mod vũ khí: +6
+        breakdown[primaryType] += wp.mod;
+        totalFlatMod += wp.mod;
+
+        // Necrotic d4: (currentWrathStack * 1d4) (hoặc nhân đôi nếu Crit)
+        if (currentWrathStack > 0) {
+            const necroticDiceCount = currentWrathStack * (isCrit ? 2 : 1);
+            let necroticSum = 0;
+            let necroticRolls = [];
+            for (let i = 0; i < necroticDiceCount; i++) {
+                const r = Math.floor(Math.random() * 4) + 1;
+                necroticRolls.push(r);
+                necroticSum += r;
+            }
+            breakdown.necrotic += necroticSum;
+            totalDmgDiceOnly += necroticSum;
+            diceRecord.push(`${necroticDiceCount}d4 (${necroticRolls.join("+")}) [Necrotic Stack x${currentWrathStack}]`);
+        }
+
+        // Hexblade's Curse: +3 flat mod (Slashing)
+        if (character.resources.curse) {
+            const curseBonus = 3;
+            breakdown[primaryType] += curseBonus;
+            totalFlatMod += curseBonus;
+        }
+
+        // Tính tổng sát thương
+        let totalDmg = 0;
+        for (const type in breakdown) {
+            totalDmg += breakdown[type];
+        }
+
+        return {
+            totalDmg,
+            totalDmgDiceOnly,
+            diceRecord,
+            breakdown
+        };
+    }
+
+    function handleOpportunityAttackRoll() {
+        triggerRollAnimation({
+            title: "TẤN CÔNG CƠ HỘI (MORTAL WRATH)",
+            subtitle: "OPPORTUNITY ATTACK (D20)",
+            isOA: true,
+            rollAction: () => {
+                const die = rollDice(20);
+                const isCritSuccess = (die === 20) || (character.resources.curse && die === 19);
+                const isCritFail = (die === 1);
+                const total = die + 9;
+
+                lastOARoll = {
+                    isCrit: isCritSuccess,
+                    die: die,
+                    total: total
+                };
+
+                return {
+                    dieResult: die,
+                    modValue: 9,
+                    total: total,
+                    formula: `Công thức: 1d20 + 9`,
+                    isCritSuccess,
+                    isCritFail,
+                    customCritText: `Tổng điểm đánh trúng: ${total}`
+                };
+            }
+        });
+    }
+
+    // Đăng ký Event Listeners cho các nút OA mới
+    if (btnOaHit) {
+        btnOaHit.addEventListener("click", () => {
+            // Chuyển sang bảng thiết lập sát thương
+            if (diceModalOaButtons) diceModalOaButtons.style.display = "none";
+            if (diceModalOaDamageSetup) diceModalOaDamageSetup.style.display = "flex";
+            
+            oaIsCrit = !!lastOARoll.isCrit;
+            if (btnOaCritToggle) {
+                btnOaCritToggle.classList.toggle("active", oaIsCrit);
+            }
+            
+            updateOADamageExpressionLabel();
+        });
+    }
+
+    if (btnOaMiss) {
+        btnOaMiss.addEventListener("click", () => {
+            currentWrathStack = 0;
+            character.wrathStack = 0;
+            saveCharacterState();
+            updateWrathStackUI();
+            updateTotalDicePool();
+            hideDiceModal();
+            triggerStatusNotification("Tấn công Cơ hội Hụt. Reset Wrath Stack về 0.");
+        });
+    }
+
+    if (btnOaCritToggle) {
+        btnOaCritToggle.addEventListener("click", () => {
+            oaIsCrit = !oaIsCrit;
+            btnOaCritToggle.classList.toggle("active", oaIsCrit);
+            updateOADamageExpressionLabel();
+        });
+    }
+
+    if (btnOaRollDamage) {
+        btnOaRollDamage.addEventListener("click", () => {
+            // Ẩn bảng thiết lập
+            if (diceModalOaDamageSetup) diceModalOaDamageSetup.style.display = "none";
+            
+            // Chạy hiệu ứng roll sát thương trong modal
+            triggerRollAnimation({
+                title: "SÁT THƯƠNG TẤN CÔNG CƠ HỘI",
+                subtitle: `MORTAL WRATH ${oaIsCrit ? "(CHÍ MẠNG)" : ""}`,
+                isOA: false,
+                hideVisual: true,
+                rollAction: () => {
+                    const result = rollOADamage(oaIsCrit);
+                    
+                    baseRolledDamage = result.totalDmg;
+                    activeDamageBreakdown = result.breakdown;
+                    
+                    setTimeout(() => {
+                        updateDamageDisplay();
+                    }, 800);
+
+                    // Record reaction damage
+                    character.turnDamageRecords.reaction = result.totalDmg;
+                    saveCharacterState();
+
+                    const formulaText = result.diceRecord.join(" + ") + (character.resources.curse ? " + 3 [HB's Curse]" : "");
+                    
+                    return {
+                        dieResult: result.totalDmgDiceOnly,
+                        modValue: result.totalDmg - result.totalDmgDiceOnly,
+                        total: result.totalDmg,
+                        formula: `Công thức: ${formulaText}`,
+                        isCritSuccess: false,
+                        isCritFail: false,
+                        customCritText: `Tấn công Cơ hội Trúng! Gây ${result.totalDmg} Sát thương.`
+                    };
+                }
+            });
+            
+            triggerStatusNotification(`Đã sử dụng đòn Tấn công Cơ hội (Mortal Wrath).`);
         });
     }
 
     const btnUseOpportunityAttack = document.getElementById("btn-use-opportunity-attack");
     if (btnUseOpportunityAttack) {
         btnUseOpportunityAttack.addEventListener("click", () => {
-            handleGeneralRoll("Tấn công Cơ hội (Mortal Wrath)", 9, "Opportunity Attack");
+            const isUsed = !character.turnActions.opportunity;
+            character.turnActions.opportunity = isUsed;
+            if (isUsed && chkReaction) {
+                chkReaction.checked = true;
+                character.turnActions.reactionChecked = true;
+            }
+            saveCharacterState();
+            updateHpUI();
+            if (isUsed) {
+                handleOpportunityAttackRoll();
+            } else {
+                triggerStatusNotification("Hủy đòn Tấn công Cơ hội.");
+            }
         });
     }
 
@@ -1486,7 +2564,9 @@ document.addEventListener("DOMContentLoaded", () => {
             'curse', 'specter', 'cunning', 
             'maskDisguise1', 'maskDisguise2', 'maskThoughts', 
             'kimonoHunt', 'seedLife', 
-            'graspless1', 'graspless2', 'graspless3'
+            'graspless1', 'graspless2', 'graspless3',
+            'bulwarkRecovery1', 'bulwarkRecovery2', 'bulwarkRecovery3',
+            'kasaCharges1', 'kasaCharges2', 'kasaCharges3'
         ];
         resKeys.forEach(key => {
             const chk = document.getElementById(`chk-res-${key}`);
@@ -1503,13 +2583,27 @@ document.addEventListener("DOMContentLoaded", () => {
             'curse', 'specter', 'cunning', 
             'maskDisguise1', 'maskDisguise2', 'maskThoughts', 
             'kimonoHunt', 'seedLife', 
-            'graspless1', 'graspless2', 'graspless3'
+            'graspless1', 'graspless2', 'graspless3',
+            'bulwarkRecovery1', 'bulwarkRecovery2', 'bulwarkRecovery3',
+            'kasaCharges1', 'kasaCharges2', 'kasaCharges3'
         ];
         resKeys.forEach(key => {
             const chk = document.getElementById(`chk-res-${key}`);
             if (chk) {
                 chk.addEventListener("change", () => {
                     character.resources[key] = chk.checked;
+                    if (key === 'curse') {
+                        const isUsed = chk.checked;
+                        for (let i = 1; i <= 3; i++) {
+                            if (strikeStates[i]) {
+                                strikeStates[i].addons.curse = isUsed;
+                            }
+                        }
+                        document.querySelectorAll('.chk-strike-addon[data-addon="curse"]').forEach(addonChk => {
+                            addonChk.checked = isUsed;
+                        });
+                        updateTotalDicePool();
+                    }
                     saveCharacterState();
                     updateHpUI();
                     syncBonusActionsButtons();
@@ -1547,7 +2641,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const dmgExpr = btn.getAttribute("data-dmg");
             const dmgType = btn.getAttribute("data-type");
 
-            const freeSpells = ["Booming Blade", "Eldritch Blast", "Chill Touch", "False Life"];
+            const freeSpells = ["Booming Blade", "Eldritch Blast", "Chill Touch", "False Life", "Kasa Veil"];
             const isFree = freeSpells.includes(spellName);
 
             if (!isFree) {
@@ -1558,10 +2652,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 let msg = `Kích hoạt phép ${spellName}!`;
                 if (spellName === "Shield") {
                     character.shieldActive = true;
-                    character.ac = 24;
+                    updateAC();
                     saveCharacterState();
                     updateHpUI();
-                    msg = "Kích hoạt Shield! +5 AC phản ứng cho đến đầu lượt sau (AC hiện tại: 24), miễn nhiễm Magic Missile.";
+                    msg = `Kích hoạt Shield! +5 AC phản ứng cho đến đầu lượt sau (AC hiện tại: ${character.ac}), miễn nhiễm Magic Missile.`;
                 } else if (spellName === "False Life") {
                     // Fiendish Vigor: cast miễn phí ở Bậc 4 (Pact Magic level) → max THP = 23
                     character.hpTemp = Math.max(character.hpTemp, 23);
@@ -1578,6 +2672,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     msg = "Kích hoạt Darkness! Tạo bóng tối ma thuật bán kính 15 ft tập trung Concentration.";
                 } else if (spellName === "Fly") {
                     msg = "Kích hoạt Fly! Nhận tốc độ bay 60 ft tập trung Concentration.";
+                } else if (spellName === "Kasa Veil") {
+                    // Consume 1 Kasa Charge
+                    if (!character.resources.kasaCharges1) {
+                        character.resources.kasaCharges1 = true;
+                    } else if (!character.resources.kasaCharges2) {
+                        character.resources.kasaCharges2 = true;
+                    } else if (!character.resources.kasaCharges3) {
+                        character.resources.kasaCharges3 = true;
+                    } else {
+                        alert("Kasa-obake đã hết hạt ngọc (Charges) cho ngày hôm nay!");
+                        return;
+                    }
+                    saveCharacterState();
+                    updateHpUI();
+                    msg = "Kích hoạt Kasa: Veil of Forgotten Existence! Tạo vùng 10x10 ft ẩn thân tuyệt đối.";
                 }
                 syncBonusActionsButtons();
                 triggerStatusNotification(msg);

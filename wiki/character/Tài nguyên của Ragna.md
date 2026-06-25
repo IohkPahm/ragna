@@ -7,7 +7,7 @@ Subclass: The Hexblade
 
 Level: 7
 
-Max HP: 54
+Max HP: 61
 Ac 17 (Half Plate Armor (15 + 2(dex) = 17)
 
 Ability Score: +3
@@ -225,7 +225,7 @@ p157
 Prerequisites: Level 5+ Warlock, Pact of the Blade
 You gain the Extra Attack feature for your pact weapon only. With that feature, you can attack twice with the weapon instead of once when you take the Attack action on your turn.
 Source: PHB'24, page 157. Available in the SRD 5.2.1.
-6.Lessons of the First Ones
+6. Lesson of the First One - Lords' Alliance Agent
 PHB'24
 p156
 Prerequisite: Level 2+ Warlock

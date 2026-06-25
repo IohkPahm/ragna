@@ -22,16 +22,33 @@ document.addEventListener("DOMContentLoaded", () => {
     // ═══════════════════════════════════
     const DEFAULT_STATE = {
         name: "Ragna",
-        hpMax: 54,
-        hpCurrent: 54,
+        hpMax: 61,
+        hpCurrent: 61,
         hpTemp: 0,
         ac: 19,
         shieldActive: false,
+        equippedArmor: "bulwark",
         initiative: 2,
         pactSlotsMax: 2,
         pactSlotsCurrent: 2,
         wrathStack: 0,
         pactWeaponDamageType: "Slashing",
+        currentTurn: 1,
+        roundHistory: [],
+        turnActions: {
+            pact: false,
+            repel: false,
+            counterspell: false,
+            opportunity: false,
+            curse: false,
+            maskThoughts: false,
+            kimonoHunt: false,
+            shield: false,
+            actionChecked: true,
+            bonusChecked: false,
+            reactionChecked: false,
+            movementChecked: false
+        },
         resources: {
             curse: false,
             specter: false,
@@ -43,7 +60,13 @@ document.addEventListener("DOMContentLoaded", () => {
             seedLife: false,
             graspless1: false,
             graspless2: false,
-            graspless3: false
+            graspless3: false,
+            bulwarkRecovery1: false,
+            bulwarkRecovery2: false,
+            bulwarkRecovery3: false,
+            kasaCharges1: false,
+            kasaCharges2: false,
+            kasaCharges3: false
         },
         conditions: {
             blinded: false,
@@ -70,7 +93,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     conditions: {
                         ...DEFAULT_STATE.conditions,
                         ...(parsed.conditions || {})
-                    }
+                    },
+                    turnActions: {
+                        ...DEFAULT_STATE.turnActions,
+                        ...(parsed.turnActions || {})
+                    },
+                    roundHistory: parsed.roundHistory || []
                 };
                 // Sanity check: HP không được vượt quá Max HP hoặc âm
                 merged.hpMax = DEFAULT_STATE.hpMax; // luôn dùng giá trị cứng từ code
@@ -96,10 +124,15 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateViewUI() {
         // Cập nhật HP
         const viewCurrentHp = document.getElementById("view-current-hp");
+        const viewMaxHp = document.getElementById("view-max-hp");
         const viewHpBarFill = document.getElementById("view-hp-bar-fill");
         const viewTempBarFill = document.getElementById("view-temp-bar-fill");
         const viewTempHpLabel = document.getElementById("view-temp-hp-label");
         const viewTempHp = document.getElementById("view-temp-hp");
+        
+        if (viewMaxHp) {
+            viewMaxHp.textContent = character.hpMax;
+        }
         
         if (viewCurrentHp && viewHpBarFill) {
             viewCurrentHp.textContent = character.hpCurrent;
@@ -121,6 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Cập nhật AC
+        updateAC();
         const acDisplay = document.getElementById("ac-value-display");
         if (acDisplay) {
             acDisplay.textContent = character.ac;
@@ -135,6 +169,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         }
+
+
 
         // Đồng bộ checkboxes tài nguyên
         syncResourcesUI();
@@ -176,7 +212,9 @@ document.addEventListener("DOMContentLoaded", () => {
             'curse', 'specter', 'cunning', 
             'maskDisguise1', 'maskDisguise2', 'maskThoughts', 
             'kimonoHunt', 'seedLife', 
-            'graspless1', 'graspless2', 'graspless3'
+            'graspless1', 'graspless2', 'graspless3',
+            'bulwarkRecovery1', 'bulwarkRecovery2', 'bulwarkRecovery3',
+            'kasaCharges1', 'kasaCharges2', 'kasaCharges3'
         ];
         resKeys.forEach(key => {
             const chk = document.querySelector(`.res-sync-chk[data-res="${key}"]`);
@@ -415,10 +453,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (acBox) {
         acBox.addEventListener("click", () => {
             character.shieldActive = !character.shieldActive;
-            character.ac = character.shieldActive ? 24 : 19;
+            updateAC();
             saveCharacterState();
             updateViewUI();
-            triggerStatusNotification(character.shieldActive ? "Kích hoạt Khiên phép Shield! AC tăng thành 24 (+5)." : "Huỷ kích hoạt Khiên phép Shield. AC trở lại 19.");
+            triggerStatusNotification(character.shieldActive ? `Kích hoạt Khiên phép Shield! AC tăng thành ${character.ac} (+5).` : `Huỷ kích hoạt Khiên phép Shield. AC trở lại ${character.ac}.`);
         });
     }
 
@@ -659,10 +697,10 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         } else if (spellName === "Shield") {
             character.shieldActive = true;
-            character.ac = 24;
+            updateAC();
             saveCharacterState();
             updateViewUI();
-            triggerStatusNotification("Thi triển Shield! +5 AC phản ứng cho đến đầu lượt sau (AC hiện tại: 24).");
+            triggerStatusNotification(`Thi triển Shield! +5 AC phản ứng cho đến đầu lượt sau (AC hiện tại: ${character.ac}).`);
         } else {
             let msg = `Thi triển thành công phép ${spellName}!`;
             if (spellName === "Darkness") {
@@ -681,6 +719,70 @@ document.addEventListener("DOMContentLoaded", () => {
             triggerStatusNotification(msg);
             updateViewUI();
         }
+    }
+
+    // Hàm tính AC động dựa vào trạng thái giáp và khiên phép
+    function updateAC() {
+        let dexMod = 2; // Ragna DEX 14 (+2)
+        let baseAC = 15 + dexMod; // Cả hai bộ giáp đều có base AC 15 + DEX modifier (+2)
+        let totalAC = baseAC + 1 /* Cloak of Protection */ + 1 /* Cường hóa +1 Armor chung */;
+        if (character.shieldActive) {
+            totalAC += 5;
+        }
+        character.ac = totalAC;
+    }
+
+
+
+    // Bulwark Recovery button click
+    const btnBulwarkRecovery = document.getElementById("btn-use-bulwark-recovery");
+    if (btnBulwarkRecovery) {
+        btnBulwarkRecovery.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (!character.resources.bulwarkRecovery1) {
+                character.resources.bulwarkRecovery1 = true;
+            } else if (!character.resources.bulwarkRecovery2) {
+                character.resources.bulwarkRecovery2 = true;
+            } else if (!character.resources.bulwarkRecovery3) {
+                character.resources.bulwarkRecovery3 = true;
+            } else {
+                alert("Bạn đã dùng hết cả 3 lượt 'Bulwark Recovery' của ngày hôm nay rồi!");
+                return;
+            }
+            saveCharacterState();
+            updateViewUI();
+            triggerStatusNotification("Sử dụng Bulwark Recovery! Hồi lại 1 Spell Slot cấp thấp hơn.");
+        });
+    }
+
+    // Kasa-obake Veil button click
+    const btnKasaVeil = document.getElementById("btn-use-kasa-veil");
+    if (btnKasaVeil) {
+        btnKasaVeil.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (!character.resources.kasaCharges1) {
+                character.resources.kasaCharges1 = true;
+            } else if (!character.resources.kasaCharges2) {
+                character.resources.kasaCharges2 = true;
+            } else if (!character.resources.kasaCharges3) {
+                character.resources.kasaCharges3 = true;
+            } else {
+                alert("Kasa-obake đã hết hạt ngọc (Charges) cho ngày hôm nay!");
+                return;
+            }
+            saveCharacterState();
+            updateViewUI();
+            triggerStatusNotification("Kích hoạt Màn sương Quên lãng! Tạo vùng 10x10 ft ẩn thân tuyệt đối.");
+        });
+    }
+
+    // Kasa-obake Leap button click
+    const btnKasaLeap = document.getElementById("btn-use-kasa-leap");
+    if (btnKasaLeap) {
+        btnKasaLeap.addEventListener("click", (e) => {
+            e.stopPropagation();
+            triggerStatusNotification("Kasa-obake thực hiện Cú nhảy Tinh nghịch di chuyển 20 feet.");
+        });
     }
 
     document.querySelectorAll(".btn-cast-spell-action").forEach(btn => {

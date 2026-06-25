@@ -187,4 +187,4 @@ Total:          6 weapon attacks + 30ft reposition
 
 ---
 
-*Xem thêm: [Fighter](fighter.md) | [Spells Known](../spells/spells-known.md) | [Cantrips](../spells/cantrips.md)*
+*Xem thêm: [Fighter](fighter.md) | [Spell của Ragna](../spells/Spell%20c%E1%BB%A7a%20Ragna.md) | [Cantrips](../spells/cantrips.md)*

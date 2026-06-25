@@ -1062,6 +1062,37 @@ html, body {
     box-shadow: 0 0 10px rgba(255, 111, 42, 0.3);
 }
 
+.btn-reset-turn-large {
+    background: rgba(255, 111, 42, 0.08);
+    border: 1px solid rgba(255, 111, 42, 0.4);
+    color: var(--color-accent-orange);
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    padding: 14px 40px;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(255, 111, 42, 0.1);
+}
+
+.btn-reset-turn-large:hover {
+    background: var(--color-accent-orange);
+    color: #ffffff;
+    border-color: var(--color-accent-orange);
+    box-shadow: 0 6px 20px rgba(255, 111, 42, 0.35);
+    transform: translateY(-2px);
+}
+
+.btn-reset-turn-large:active {
+    transform: translateY(0);
+}
+
+
 .turn-actions-container {
     display: flex;
     flex-direction: column;
@@ -2788,13 +2819,24 @@ html, body {
     color: #ffffff;
     letter-spacing: 0.5px;
 }
+.item-card-title.legendary {
+    color: var(--color-accent-orange);
+    text-shadow: 0 0 10px rgba(255, 111, 42, 0.5);
+}
+.item-card-title.very-rare {
+    color: #a855f7;
+    text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
 .item-card-title.rare {
-    color: #ff6f2a;
-    text-shadow: 0 0 10px rgba(255, 111, 42, 0.2);
+    color: var(--color-info);
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
 }
 .item-card-title.uncommon {
-    color: var(--color-accent-gold);
-    text-shadow: 0 0 10px rgba(241, 211, 130, 0.2);
+    color: var(--color-success);
+    text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+}
+.item-card-title.common {
+    color: var(--color-text-muted);
 }
 
 .item-card-rarity {
@@ -2838,6 +2880,26 @@ html, body {
 .interactive-item-card.expanded .item-card-desc {
     display: block;
     animation: actionFadeIn 0.3s ease;
+}
+
+/* Spell Category grouping in combat sheet */
+.spell-category-section {
+    margin-bottom: 16px;
+    border-left: 2px solid rgba(241, 211, 130, 0.15);
+    padding-left: 12px;
+    background: rgba(255, 255, 255, 0.01);
+    border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+.spell-category-header {
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--color-accent-gold);
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 /* ═══════════════════════════════════
@@ -3262,15 +3324,64 @@ html, body {
 }
 
 /* Active buttons for toggleable resources */
-.bonus-action-item.active .btn-bonus-action {
-    background: var(--color-danger);
-    border-color: var(--color-danger);
-    color: #ffffff;
+.bonus-action-item[data-action="curse"].active .btn-bonus-action {
+    background: var(--color-accent-gold);
+    border-color: var(--color-accent-gold);
+    color: var(--color-text-dark);
+    box-shadow: 0 0 12px rgba(241, 211, 130, 0.5);
 }
-.bonus-action-item.active .btn-bonus-action:hover {
-    background: rgba(231, 76, 60, 0.85);
+.bonus-action-item[data-action="curse"].active .btn-bonus-action:hover {
+    background: rgba(241, 211, 130, 0.85);
+    color: var(--color-text-dark);
+    box-shadow: 0 0 15px rgba(241, 211, 130, 0.7);
+}
+
+.bonus-action-item[data-action="surface-echo"].active .btn-bonus-action {
+    background: #cbd5e1;
+    border-color: #cbd5e1;
+    color: var(--color-text-dark);
+    box-shadow: 0 0 12px rgba(203, 213, 225, 0.5);
+}
+.bonus-action-item[data-action="surface-echo"].active .btn-bonus-action:hover {
+    background: rgba(203, 213, 225, 0.85);
+    color: var(--color-text-dark);
+    box-shadow: 0 0 15px rgba(203, 213, 225, 0.7);
+}
+
+.bonus-action-item[data-action="repel"].active .btn-bonus-action {
+    background: #bd93f9;
+    border-color: #bd93f9;
+    color: var(--color-text-dark);
+    box-shadow: 0 0 12px rgba(189, 147, 249, 0.5);
+}
+.bonus-action-item[data-action="repel"].active .btn-bonus-action:hover {
+    background: rgba(189, 147, 249, 0.85);
+    color: var(--color-text-dark);
+    box-shadow: 0 0 15px rgba(189, 147, 249, 0.7);
+}
+
+.bonus-action-item[data-action="hunt"].active .btn-bonus-action {
+    background: var(--color-accent-orange);
+    border-color: var(--color-accent-orange);
     color: #ffffff;
-    box-shadow: 0 0 8px rgba(231, 76, 60, 0.3);
+    box-shadow: 0 0 12px rgba(255, 111, 42, 0.5);
+}
+.bonus-action-item[data-action="hunt"].active .btn-bonus-action:hover {
+    background: rgba(255, 111, 42, 0.85);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(255, 111, 42, 0.7);
+}
+
+.bonus-action-item[data-action="pact"].active .btn-bonus-action {
+    background: #cbd5e1;
+    border-color: #cbd5e1;
+    color: var(--color-text-dark);
+    box-shadow: 0 0 12px rgba(203, 213, 225, 0.5);
+}
+.bonus-action-item[data-action="pact"].active .btn-bonus-action:hover {
+    background: rgba(203, 213, 225, 0.85);
+    color: var(--color-text-dark);
+    box-shadow: 0 0 15px rgba(203, 213, 225, 0.7);
 }
 
 /* Specific styling for Reaction Actions */
@@ -3318,4 +3429,198 @@ html, body {
     background: var(--color-accent-orange);
     color: #ffffff;
     box-shadow: 0 0 8px rgba(255, 111, 42, 0.25);
+}
+
+/* ── COMBAT ROUND HISTORY PANEL ── */
+.combat-round-history-panel {
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.combat-round-history-panel .btn-reset-combat:hover {
+    opacity: 1 !important;
+    text-shadow: 0 0 8px rgba(231, 76, 60, 0.4);
+}
+
+.round-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+/* Custom scrollbar for round history list */
+.round-history-list::-webkit-scrollbar {
+    display: block !important;
+    width: 6px !important;
+}
+.round-history-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-radius: 3px !important;
+}
+.round-history-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-radius: 3px !important;
+}
+.round-history-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.round-card-item {
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: var(--border-radius-md);
+    padding: 12px 14px;
+    transition: all 0.3s ease;
+    animation: roundFadeIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.round-card-item:hover {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+@keyframes roundFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.round-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+}
+
+.round-card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.round-card-title {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-accent-gold);
+    letter-spacing: 0.5px;
+}
+
+.round-card-dmg {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-accent-orange);
+}
+
+.round-card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+}
+
+.round-detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    line-height: 1.3;
+}
+
+.round-detail-icon {
+    font-size: 0.75rem;
+    min-width: 14px;
+    text-align: center;
+}
+
+.round-detail-text {
+    flex-grow: 1;
+}
+
+.round-card-delete-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0 4px;
+    opacity: 0.5;
+    transition: all 0.2s;
+}
+
+.round-card-delete-btn:hover {
+    color: var(--color-danger);
+    opacity: 1;
+}
+
+/* Active styles for additional action items */
+.bonus-action-item[data-action="repel"].active {
+    border-color: rgba(189, 147, 249, 0.35);
+    background: rgba(189, 147, 249, 0.03);
+}
+
+.bonus-action-item[data-action="pact"] .bonus-action-name { color: #cbd5e1; }
+.bonus-action-item[data-action="pact"] .btn-bonus-action {
+    border-color: rgba(203, 213, 225, 0.3);
+    color: #cbd5e1;
+    background: rgba(203, 213, 225, 0.05);
+}
+.bonus-action-item[data-action="pact"] .btn-bonus-action:hover {
+    background: #cbd5e1;
+    color: var(--color-text-dark);
+    box-shadow: 0 0 8px rgba(203, 213, 225, 0.25);
+}
+.bonus-action-item[data-action="pact"].active {
+    border-color: rgba(203, 213, 225, 0.35);
+    background: rgba(203, 213, 225, 0.03);
+}
+
+/* Active states for specific reactions */
+.reaction-action-item[data-action="shield"].active .btn-reaction-action {
+    background: var(--color-info);
+    border-color: var(--color-info);
+    color: var(--color-text-dark);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
+}
+.reaction-action-item[data-action="shield"].active .btn-reaction-action:hover {
+    background: rgba(0, 229, 255, 0.85);
+    color: var(--color-text-dark);
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.7);
+}
+
+.reaction-action-item[data-action="counterspell"].active .btn-reaction-action {
+    background: #cbd5e1;
+    border-color: #cbd5e1;
+    color: var(--color-text-dark);
+    box-shadow: 0 0 12px rgba(203, 213, 225, 0.5);
+}
+.reaction-action-item[data-action="counterspell"].active .btn-reaction-action:hover {
+    background: rgba(203, 213, 225, 0.85);
+    color: var(--color-text-dark);
+    box-shadow: 0 0 15px rgba(203, 213, 225, 0.7);
+}
+
+.reaction-action-item[data-action="opportunity-attack"].active .btn-reaction-action {
+    background: var(--color-accent-orange);
+    border-color: var(--color-accent-orange);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(255, 111, 42, 0.5);
+}
+.reaction-action-item[data-action="opportunity-attack"].active .btn-reaction-action:hover {
+    background: rgba(255, 111, 42, 0.85);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(255, 111, 42, 0.7);
+}
+.reaction-action-item[data-action="counterspell"].active {
+    border-color: rgba(203, 213, 225, 0.35);
+    background: rgba(203, 213, 225, 0.03);
+}
+.reaction-action-item[data-action="opportunity-attack"].active {
+    border-color: rgba(255, 111, 42, 0.35);
+    background: rgba(255, 111, 42, 0.03);
 }
