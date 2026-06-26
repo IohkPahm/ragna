@@ -2286,6 +2286,7 @@ html, body {
     height: 100px;
     position: relative;
     transform-style: preserve-3d;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .d20-svg {
@@ -3312,15 +3313,30 @@ html, body {
 }
 
 .bonus-action-item[data-action="shining-smite"] .bonus-action-name { color: var(--color-info); }
-.bonus-action-item[data-action="shining-smite"] .btn-quick-roll-spell {
+.bonus-action-item[data-action="shining-smite"] .btn-bonus-action {
     border-color: rgba(0, 229, 255, 0.3);
     color: var(--color-info);
     background: rgba(0, 229, 255, 0.05);
 }
-.bonus-action-item[data-action="shining-smite"] .btn-quick-roll-spell:hover {
+.bonus-action-item[data-action="shining-smite"] .btn-bonus-action:hover {
     background: var(--color-info);
     color: var(--color-text-dark);
     box-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
+}
+.bonus-action-item[data-action="shining-smite"].active .btn-bonus-action {
+    background: var(--color-info);
+    border-color: var(--color-info);
+    color: var(--color-text-dark);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
+}
+.bonus-action-item[data-action="shining-smite"].active .btn-bonus-action:hover {
+    background: rgba(0, 229, 255, 0.85);
+    color: var(--color-text-dark);
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.7);
+}
+.bonus-action-item[data-action="shining-smite"].active {
+    border-color: rgba(0, 229, 255, 0.35);
+    background: rgba(0, 229, 255, 0.03);
 }
 
 /* Active buttons for toggleable resources */
@@ -3623,4 +3639,77 @@ html, body {
 .reaction-action-item[data-action="opportunity-attack"].active {
     border-color: rgba(255, 111, 42, 0.35);
     background: rgba(255, 111, 42, 0.03);
+}
+
+/* ── CONCENTRATION STYLES ── */
+.btn-concentration {
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 8px 18px;
+    border-radius: var(--border-radius-sm);
+    cursor: default;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+}
+
+.btn-concentration.none {
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.btn-concentration.active {
+    background: rgba(0, 229, 255, 0.08);
+    border: 1px solid rgba(0, 229, 255, 0.35);
+    color: #00e5ff;
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
+    cursor: pointer;
+}
+
+.btn-concentration.active:hover {
+    background: rgba(0, 229, 255, 0.15);
+    border-color: #00e5ff;
+    box-shadow: 0 0 18px rgba(0, 229, 255, 0.35);
+}
+
+/* Double dice styles */
+.dice-graphic-container.double-dice {
+    width: 240px !important;
+    flex-direction: row !important;
+    gap: 20px;
+}
+
+.dice-modal.double-dice-active {
+    max-width: 480px !important;
+}
+
+.dice-d20-visual.chosen-adv {
+    transform: scale(1.15);
+    z-index: 10;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.dice-d20-visual.chosen-adv .d20-svg {
+    filter: drop-shadow(0 0 15px rgba(241, 211, 130, 0.85)) !important;
+}
+
+.dice-d20-visual.chosen-disadv {
+    transform: scale(1.15);
+    z-index: 10;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.dice-d20-visual.chosen-disadv .d20-svg {
+    filter: drop-shadow(0 0 15px rgba(231, 76, 60, 0.85)) !important;
+}
+
+.dice-d20-visual.unchosen {
+    filter: grayscale(1) opacity(0.35);
+    transform: scale(0.9);
+    transition: all 0.4s ease;
 }

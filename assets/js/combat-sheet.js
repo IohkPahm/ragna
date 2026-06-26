@@ -84,7 +84,10 @@ document.addEventListener("DOMContentLoaded", () => {
             reaction: 0,
             bonusAction: 0,
             other: 0
-        }
+        },
+        concentrationActive: false,
+        concentratingSpell: null,
+        shiningSmiteDamageApplied: false
     };
 
     function getCharacterState() {
@@ -389,6 +392,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // Đồng bộ các checkbox tài nguyên
         syncResourcesUI();
         
+        // Đồng bộ Concentration UI
+        if (typeof syncConcentrationUI === "function") {
+            syncConcentrationUI();
+        }
+        
         // Đồng bộ các checkbox lượt đi (Action, Bonus, Reaction, Move)
         if (typeof syncTurnCheckboxesUI === "function") {
             syncTurnCheckboxesUI();
@@ -444,6 +452,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const val = parseInt(hpInputValue.value);
         if (isNaN(val) || val <= 0) return;
         
+        const wasConcentrating = character.concentrationActive && character.concentratingSpell;
+        
         let remainingDmg = val;
         
         if (character.hpTemp > 0) {
@@ -463,6 +473,15 @@ document.addEventListener("DOMContentLoaded", () => {
         saveCharacterState();
         updateHpUI(true);
         hpInputValue.value = "";
+
+        if (wasConcentrating) {
+            if (character.hpCurrent === 0) {
+                cancelConcentration();
+                triggerStatusNotification("Ragna bị bất tỉnh (0 HP). Tự động mất tập trung phép thuật!");
+            } else {
+                startConcentrationCheck('auto', val);
+            }
+        }
     });
 
     // Xử lý Cộng Máu Tạm Thời (Temp HP)
@@ -781,6 +800,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     btnCrit.disabled = false;
                 }
+
+                // Auto-apply Shining Smite damage if concentrating but not applied yet
+                if (character.concentrationActive && character.concentratingSpell === "Shining Smite" && !character.shiningSmiteDamageApplied) {
+                    strikeStates[strikeNum].addons.smite = true;
+                    const chk = rowEl.querySelector('.chk-strike-addon[data-addon="smite"]');
+                    if (chk) chk.checked = true;
+                    character.shiningSmiteDamageApplied = true;
+                    saveCharacterState();
+                    triggerStatusNotification(`Tự động áp dụng +4d6 sát thương của Shining Smite lên Đòn Đánh ${strikeNum} (đòn đánh trúng đầu tiên).`);
+                }
             }
             updateTotalDicePool();
         });
@@ -997,6 +1026,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let lastOARoll = { isCrit: false, die: 0, total: 0 };
     let oaIsCrit = false;
 
+    let conCheckActive = false;
+    let conCheckType = null; // 'manual' or 'auto'
+    let conDc = 10;
+
     function hideDiceModal() {
         gsap.to(diceModal, {
             scale: 0.9,
@@ -1007,6 +1040,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     diceModalOverlay.style.display = "none";
                     diceModalOverlay.classList.remove("show-result");
                 }
+                if (diceModal) {
+                    diceModal.classList.remove("double-dice-active");
+                }
+                // Reset Concentration UI blocks in modal
+                const conSetup = document.getElementById("dice-modal-con-setup");
+                if (conSetup) conSetup.style.display = "none";
+                const conManualButtons = document.getElementById("dice-modal-con-manual-buttons");
+                if (conManualButtons) conManualButtons.style.display = "none";
+                conCheckActive = false;
+                conCheckType = null;
             }
         });
     }
@@ -1019,9 +1062,58 @@ document.addEventListener("DOMContentLoaded", () => {
                 // If OA buttons or OA Damage Setup are active, don't allow closing via click-outside
                 const isOaActive = (diceModalOaButtons && diceModalOaButtons.style.display === "flex") || 
                                    (diceModalOaDamageSetup && diceModalOaDamageSetup.style.display === "flex");
-                if (isOaActive) return;
+                if (isOaActive || conCheckActive) return;
                 hideDiceModal();
             }
+        });
+    }
+
+    // Đăng ký sự kiện kiểm tra Concentration
+    const btnConStatus = document.getElementById("btn-concentration-status");
+    if (btnConStatus) {
+        btnConStatus.addEventListener("click", () => {
+            if (character.concentrationActive && character.concentratingSpell) {
+                startConcentrationCheck('manual');
+            } else {
+                triggerStatusNotification("Không có phép nào đang duy trì tập trung.");
+            }
+        });
+    }
+
+    const btnConDisadv = document.getElementById("btn-con-disadv");
+    if (btnConDisadv) {
+        btnConDisadv.addEventListener("click", () => {
+            performConcentrationRoll('disadv');
+        });
+    }
+
+    const btnConNormal = document.getElementById("btn-con-normal");
+    if (btnConNormal) {
+        btnConNormal.addEventListener("click", () => {
+            performConcentrationRoll('normal');
+        });
+    }
+
+    const btnConAdv = document.getElementById("btn-con-adv");
+    if (btnConAdv) {
+        btnConAdv.addEventListener("click", () => {
+            performConcentrationRoll('adv');
+        });
+    }
+
+    const btnConSuccess = document.getElementById("btn-con-success");
+    if (btnConSuccess) {
+        btnConSuccess.addEventListener("click", () => {
+            hideDiceModal();
+            triggerStatusNotification("Giữ Concentration thành công.");
+        });
+    }
+
+    const btnConFail = document.getElementById("btn-con-fail");
+    if (btnConFail) {
+        btnConFail.addEventListener("click", () => {
+            cancelConcentration();
+            hideDiceModal();
         });
     }
 
@@ -1034,10 +1126,28 @@ document.addEventListener("DOMContentLoaded", () => {
         diceModalOverlay.style.display = "flex";
         diceModalOverlay.classList.remove("show-result");
         
+        // Reset double dice layout
+        if (diceModal) diceModal.classList.remove("double-dice-active");
+        const container = document.getElementById("dice-graphic-container");
+        if (container) container.classList.remove("double-dice");
+        const diceVisual2 = document.getElementById("dice-visual-2");
+        if (diceVisual2) diceVisual2.style.display = "none";
+        
+        if (diceVisual) {
+            diceVisual.className = "dice-d20-visual";
+            diceVisual.style.transform = "";
+        }
+        if (diceVisual2) {
+            diceVisual2.className = "dice-d20-visual";
+            diceVisual2.style.transform = "";
+        }
+        
         if (diceRollTitle) diceRollTitle.textContent = title.toUpperCase();
         if (diceRollSubtitle) diceRollSubtitle.textContent = subtitle.toUpperCase();
         if (diceCritText) diceCritText.textContent = "";
         if (diceNumberText) diceNumberText.textContent = "?";
+        const diceNumberText2 = document.getElementById("dice-number-text-2");
+        if (diceNumberText2) diceNumberText2.textContent = "?";
         
         // Hide elements during roll
         if (diceModalOaButtons) diceModalOaButtons.style.display = "none";
@@ -1048,7 +1158,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Hide or show the dice graphic container (d20 SVG visual)
         const graphicContainer = document.querySelector(".dice-graphic-container");
         if (graphicContainer) {
-            graphicContainer.style.display = hideVisual ? "none" : "block";
+            graphicContainer.style.display = hideVisual ? "none" : "flex";
         }
         
         gsap.fromTo(diceModal, 
@@ -1793,6 +1903,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 character.wrathStack = 0;
                 character.shieldActive = false;
                 character.ac = 19;
+                character.concentrationActive = false;
+                character.concentratingSpell = null;
+                character.shiningSmiteDamageApplied = false;
                 
                 if (character.turnActions) {
                     character.turnActions.pact = false;
@@ -1967,6 +2080,333 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ═══════════════════════════════════
+    // CONCENTRATION & SHINING SMITE LOGIC
+    // ═══════════════════════════════════
+    const CONCENTRATION_SPELLS = ["Shining Smite", "Darkness", "Fly", "Shadow of Moil"];
+
+    function syncConcentrationUI() {
+        const btnCon = document.getElementById("btn-concentration-status");
+        if (!btnCon) return;
+
+        if (character.concentrationActive && character.concentratingSpell) {
+            btnCon.textContent = `CONCENTRATION: ${character.concentratingSpell.toUpperCase()}`;
+            btnCon.className = "btn-concentration active";
+        } else {
+            btnCon.textContent = "CONCENTRATION: NONE";
+            btnCon.className = "btn-concentration none";
+        }
+    }
+
+    function cancelConcentration() {
+        if (!character.concentrationActive) return;
+
+        const previousSpell = character.concentratingSpell;
+        character.concentrationActive = false;
+        character.concentratingSpell = null;
+        character.shiningSmiteDamageApplied = false;
+
+        // If previous spell was Shining Smite, remove smite addon from all strikes
+        if (previousSpell === "Shining Smite") {
+            for (let i = 1; i <= 3; i++) {
+                if (strikeStates[i]) {
+                    strikeStates[i].addons.smite = false;
+                }
+            }
+            document.querySelectorAll('.chk-strike-addon[data-addon="smite"]').forEach(chk => {
+                chk.checked = false;
+            });
+            updateTotalDicePool();
+        }
+
+        saveCharacterState();
+        updateHpUI();
+        triggerStatusNotification(`Mất tập trung phép ${previousSpell}!`);
+    }
+
+    function toggleShiningSmite() {
+        const isCurrentlyActive = character.concentrationActive && character.concentratingSpell === "Shining Smite";
+        if (isCurrentlyActive) {
+            cancelConcentration();
+        } else {
+            // Deduct spell slot
+            if (!consumePactSlot("Shining Smite")) return;
+
+            // Track latest hit
+            let latestHitIndex = -1;
+            for (let i = 1; i <= 3; i++) {
+                if (strikeStates[i] && strikeStates[i].state === "hit") {
+                    latestHitIndex = i;
+                }
+            }
+
+            // Lose previous concentration if any
+            if (character.concentrationActive && character.concentratingSpell) {
+                const prev = character.concentratingSpell;
+                if (prev === "Shining Smite") {
+                    for (let i = 1; i <= 3; i++) {
+                        if (strikeStates[i]) {
+                            strikeStates[i].addons.smite = false;
+                        }
+                    }
+                    document.querySelectorAll('.chk-strike-addon[data-addon="smite"]').forEach(chk => {
+                        chk.checked = false;
+                    });
+                }
+            }
+
+            // Start concentration
+            character.concentrationActive = true;
+            character.concentratingSpell = "Shining Smite";
+            character.shiningSmiteDamageApplied = false;
+
+            // If a hit was found, check smite checkbox and set shiningSmiteDamageApplied to true
+            if (latestHitIndex !== -1) {
+                strikeStates[latestHitIndex].addons.smite = true;
+                const chk = document.querySelector(`.chk-strike-addon[data-strike="${latestHitIndex}"][data-addon="smite"]`);
+                if (chk) chk.checked = true;
+                character.shiningSmiteDamageApplied = true;
+                triggerStatusNotification("Kích hoạt Shining Smite! Đã trừ 1 Pact Slot Bậc 4. Tự động cộng +4d6 Radiant vào Đòn Đánh " + latestHitIndex + ".");
+            } else {
+                triggerStatusNotification("Kích hoạt Shining Smite! Đã trừ 1 Pact Slot Bậc 4. Bắt đầu duy trì Concentration (chờ đòn đánh trúng).");
+            }
+
+            if (chkBonus) {
+                chkBonus.checked = true;
+                character.turnActions.bonusChecked = true;
+            }
+
+            saveCharacterState();
+            updateHpUI();
+            updateTotalDicePool();
+        }
+    }
+
+    function startConcentrationCheck(type, damageValue = 0) {
+        if (!diceModalOverlay) return;
+
+        conCheckActive = true;
+        conCheckType = type; // 'manual' or 'auto'
+
+        // Reset double dice layout in graphic container
+        if (diceModal) diceModal.classList.remove("double-dice-active");
+        const container = document.getElementById("dice-graphic-container");
+        if (container) container.classList.remove("double-dice");
+        const diceVisual2 = document.getElementById("dice-visual-2");
+        if (diceVisual2) diceVisual2.style.display = "none";
+
+        if (diceVisual) {
+            diceVisual.className = "dice-d20-visual";
+            diceVisual.style.transform = "";
+        }
+        if (diceVisual2) {
+            diceVisual2.className = "dice-d20-visual";
+            diceVisual2.style.transform = "";
+        }
+
+        // Prepare modal elements
+        if (diceRollTitle) diceRollTitle.textContent = type === 'auto' ? "CONCENTRATION CHECK (AUTO)" : "CONCENTRATION CHECK (MANUAL)";
+        if (diceRollSubtitle) diceRollSubtitle.textContent = character.concentratingSpell ? character.concentratingSpell.toUpperCase() : "NO ACTIVE SPELL";
+        if (diceCritText) diceCritText.textContent = "";
+        if (diceNumberText) diceNumberText.textContent = "?";
+        const diceNumberText2 = document.getElementById("dice-number-text-2");
+        if (diceNumberText2) diceNumberText2.textContent = "?";
+        if (diceTotalDisplay) diceTotalDisplay.textContent = "";
+
+        // Hide other elements
+        if (diceModalOaButtons) diceModalOaButtons.style.display = "none";
+        if (diceModalOaDamageSetup) diceModalOaDamageSetup.style.display = "none";
+        if (btnDismissRoll) btnDismissRoll.style.display = "none";
+        if (btnCloseDiceModal) btnCloseDiceModal.style.display = "none";
+        const manualButtons = document.getElementById("dice-modal-con-manual-buttons");
+        if (manualButtons) manualButtons.style.display = "none";
+
+        // Show setup panel
+        const conSetup = document.getElementById("dice-modal-con-setup");
+        if (conSetup) {
+            conSetup.style.display = "flex";
+            const dcDisplay = document.getElementById("con-dc-display");
+            if (dcDisplay) {
+                if (type === 'auto') {
+                    conDc = Math.max(10, Math.floor(damageValue / 2));
+                    dcDisplay.textContent = `KIỂM TRA TỰ ĐỘNG - ĐỘ KHÓ (DC): ${conDc}`;
+                } else {
+                    conDc = 10;
+                    dcDisplay.textContent = "KIỂM TRA TẬP TRUNG (THỦ CÔNG)";
+                }
+            }
+        }
+
+        // Clear formula displays
+        if (diceCalcFormula) diceCalcFormula.textContent = "";
+        if (diceCalcDie) diceCalcDie.textContent = "";
+        if (diceCalcMod) diceCalcMod.textContent = "";
+
+        // Display modal
+        diceModalOverlay.style.display = "flex";
+        diceModalOverlay.classList.remove("show-result");
+
+        const graphicContainer = document.querySelector(".dice-graphic-container");
+        if (graphicContainer) {
+            graphicContainer.style.display = "flex";
+        }
+
+        gsap.fromTo(diceModal, 
+            { scale: 0.85, opacity: 0 },
+            { scale: 1, opacity: 1, duration: 0.3, ease: "power2.out" }
+        );
+    }
+
+    function performConcentrationRoll(rollType) {
+        const conSetup = document.getElementById("dice-modal-con-setup");
+        if (conSetup) conSetup.style.display = "none";
+
+        const container = document.getElementById("dice-graphic-container");
+        const diceVisual2 = document.getElementById("dice-visual-2");
+        const diceNumberText2 = document.getElementById("dice-number-text-2");
+
+        // Clean up classes/styling
+        if (container) container.classList.remove("double-dice");
+        if (diceVisual2) diceVisual2.style.display = "none";
+        
+        if (diceVisual) {
+            diceVisual.className = "dice-d20-visual";
+            diceVisual.style.transform = "";
+        }
+        if (diceVisual2) {
+            diceVisual2.className = "dice-d20-visual";
+            diceVisual2.style.transform = "";
+        }
+
+        const isAdvOrDis = (rollType === 'adv' || rollType === 'disadv');
+
+        if (isAdvOrDis) {
+            if (container) container.classList.add("double-dice");
+            if (diceModal) diceModal.classList.add("double-dice-active");
+            if (diceVisual2) diceVisual2.style.display = "block";
+            if (diceVisual) diceVisual.classList.add("rolling");
+            if (diceVisual2) diceVisual2.classList.add("rolling");
+        } else {
+            if (diceVisual) diceVisual.classList.add("rolling");
+        }
+
+        let count = 0;
+        const spinInterval = setInterval(() => {
+            if (diceNumberText) diceNumberText.textContent = rollDice(20);
+            if (isAdvOrDis && diceNumberText2) {
+                diceNumberText2.textContent = rollDice(20);
+            }
+            count++;
+            if (count > 12) clearInterval(spinInterval);
+        }, 60);
+
+        setTimeout(() => {
+            if (diceVisual) diceVisual.classList.remove("rolling");
+            if (isAdvOrDis && diceVisual2) diceVisual2.classList.remove("rolling");
+
+            // Perform rolls
+            let r1 = rollDice(20);
+            let r2 = null;
+            let rolledValue = r1;
+            let formulaText = "";
+
+            if (rollType === 'adv') {
+                r2 = rollDice(20);
+                rolledValue = Math.max(r1, r2);
+                formulaText = `Advantage: max(${r1}, ${r2})`;
+            } else if (rollType === 'disadv') {
+                r2 = rollDice(20);
+                rolledValue = Math.min(r1, r2);
+                formulaText = `Disadvantage: min(${r1}, ${r2})`;
+            } else {
+                formulaText = `Đổ d20: ${r1}`;
+            }
+
+            const conSaveBonus = parseInt(document.getElementById("btn-save-con")?.getAttribute("data-bonus")) || 4;
+            const total = rolledValue + conSaveBonus;
+
+            if (diceNumberText) diceNumberText.textContent = r1;
+            if (isAdvOrDis && diceNumberText2) {
+                diceNumberText2.textContent = r2;
+            }
+
+            // Apply selected/grayed styling
+            if (isAdvOrDis) {
+                if (rollType === 'adv') {
+                    if (r1 >= r2) {
+                        if (diceVisual) diceVisual.classList.add("chosen-adv");
+                        if (diceVisual2) diceVisual2.classList.add("unchosen");
+                    } else {
+                        if (diceVisual) diceVisual.classList.add("unchosen");
+                        if (diceVisual2) diceVisual2.classList.add("chosen-adv");
+                    }
+                } else if (rollType === 'disadv') {
+                    if (r1 <= r2) {
+                        if (diceVisual) diceVisual.classList.add("chosen-disadv");
+                        if (diceVisual2) diceVisual2.classList.add("unchosen");
+                    } else {
+                        if (diceVisual) diceVisual.classList.add("unchosen");
+                        if (diceVisual2) diceVisual2.classList.add("chosen-disadv");
+                    }
+                }
+            }
+
+            if (diceCalcFormula) diceCalcFormula.textContent = `Công thức: ${formulaText} + ${conSaveBonus}`;
+            if (diceCalcDie) diceCalcDie.textContent = rolledValue;
+            if (diceCalcMod) diceCalcMod.textContent = `+ ${conSaveBonus}`;
+
+            if (diceTotalDisplay) {
+                diceTotalDisplay.textContent = total;
+                diceTotalDisplay.className = "dice-total-display";
+            }
+
+            diceModalOverlay.classList.add("show-result");
+
+            if (conCheckType === 'auto') {
+                const isSuccess = (rolledValue === 20) || (total >= conDc);
+                if (isSuccess) {
+                    if (diceTotalDisplay) diceTotalDisplay.classList.add("crit-success");
+                    if (diceCritText) {
+                        if (rolledValue === 20) {
+                            diceCritText.textContent = `CRITICAL SUCCESS (NAT 20)! Tự động giữ được spell.`;
+                        } else {
+                            diceCritText.textContent = `THÀNH CÔNG (ĐẠT DC ${conDc})! Giữ được spell.`;
+                        }
+                        diceCritText.style.color = "var(--color-success)";
+                    }
+                } else {
+                    if (diceTotalDisplay) diceTotalDisplay.classList.add("crit-fail");
+                    if (diceCritText) {
+                        diceCritText.textContent = `THẤT BẠI (KHÔNG ĐẠT DC ${conDc})! Mất tập trung spell.`;
+                        diceCritText.style.color = "var(--color-danger)";
+                    }
+                    cancelConcentration();
+                }
+
+                // Show standard dismiss button
+                if (btnDismissRoll) {
+                    btnDismissRoll.textContent = "ĐỒNG Ý";
+                    btnDismissRoll.style.display = "inline-block";
+                }
+                if (btnCloseDiceModal) btnCloseDiceModal.style.display = "block";
+
+            } else {
+                // Manual check: show Success & Fail manual selection buttons
+                if (diceCritText) {
+                    diceCritText.textContent = `Chọn kết quả cho phép: ${character.concentratingSpell}`;
+                    diceCritText.style.color = "var(--color-accent-orange)";
+                }
+
+                const manualButtons = document.getElementById("dice-modal-con-manual-buttons");
+                if (manualButtons) {
+                    manualButtons.style.display = "flex";
+                }
+                if (btnDismissRoll) btnDismissRoll.style.display = "none";
+                if (btnCloseDiceModal) btnCloseDiceModal.style.display = "none";
+            }
+        }, 800);
+    }
+
+    // ═══════════════════════════════════
     // BONUS ACTIONS & REACTIONS LOGIC
     // ═══════════════════════════════════
     function syncBonusActionsButtons() {
@@ -2113,9 +2553,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (parent) parent.classList.remove("active");
             }
         }
+        const btnShiningSmite = document.getElementById("btn-use-shining-smite");
+        if (btnShiningSmite) {
+            const isConcentratingOnSmite = (character.concentrationActive && character.concentratingSpell === "Shining Smite");
+            const parent = btnShiningSmite.closest(".bonus-action-item");
+            if (isConcentratingOnSmite) {
+                btnShiningSmite.textContent = "HỦY CONCENTRATION";
+                if (parent) parent.classList.add("active");
+            } else {
+                btnShiningSmite.textContent = "KÍCH HOẠT";
+                if (parent) parent.classList.remove("active");
+            }
+        }
     }
 
     // Đăng ký sự kiện click cho các nút Bonus Action mới
+    const btnUseShiningSmite = document.getElementById("btn-use-shining-smite");
+    if (btnUseShiningSmite) {
+        btnUseShiningSmite.addEventListener("click", () => {
+            toggleShiningSmite();
+        });
+    }
+
     const btnUseCurse = document.getElementById("btn-use-curse");
     if (btnUseCurse) {
         btnUseCurse.addEventListener("click", () => {
@@ -2641,11 +3100,37 @@ document.addEventListener("DOMContentLoaded", () => {
             const dmgExpr = btn.getAttribute("data-dmg");
             const dmgType = btn.getAttribute("data-type");
 
+            if (spellName === "Shining Smite") {
+                toggleShiningSmite();
+                return;
+            }
+
             const freeSpells = ["Booming Blade", "Eldritch Blast", "Chill Touch", "False Life", "Kasa Veil"];
             const isFree = freeSpells.includes(spellName);
 
             if (!isFree) {
                 if (!consumePactSlot(spellName)) return;
+            }
+
+            // Set Concentration if the cast spell requires it
+            if (CONCENTRATION_SPELLS.includes(spellName)) {
+                if (character.concentrationActive && character.concentratingSpell && character.concentratingSpell !== spellName) {
+                    const prev = character.concentratingSpell;
+                    if (prev === "Shining Smite") {
+                        for (let i = 1; i <= 3; i++) {
+                            if (strikeStates[i]) {
+                                strikeStates[i].addons.smite = false;
+                            }
+                        }
+                        document.querySelectorAll('.chk-strike-addon[data-addon="smite"]').forEach(chk => {
+                            chk.checked = false;
+                        });
+                    }
+                }
+                character.concentrationActive = true;
+                character.concentratingSpell = spellName;
+                saveCharacterState();
+                updateHpUI();
             }
 
             if (dmgExpr === "0") {

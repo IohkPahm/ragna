@@ -105,6 +105,10 @@
                             <h2 class="panel-title">QUẢN LÝ LƯỢT ĐI & BỘ TÍNH SÁT THƯƠNG</h2>
                             <button class="btn-reset-turn" id="btn-reset-turn">NEXT TURN</button>
                         </div>
+                        <!-- Concentration status bar -->
+                        <div class="concentration-container" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: flex-start;">
+                            <button id="btn-concentration-status" class="btn-concentration none">CONCENTRATION: NONE</button>
+                        </div>
 
                         <!-- 4 Hành động chính của lượt đi (khung to, nổi bật) -->
                         <div class="turn-actions-container">
@@ -501,7 +505,7 @@
                                                 <div class="bonus-action-name">Shining Smite (Đòn đánh phát sáng - Spell Bậc 4)</div>
                                                 <div class="bonus-action-desc">Cast phép nhanh ngay sau khi đánh trúng cận chiến. Gây thêm +4d6 Radiant, mục tiêu phát sáng, đồng thời đòn đánh kế tiếp lên mục tiêu có Lợi thế (Advantage).</div>
                                             </div>
-                                            <button class="btn-quick-roll-spell" data-spell="Shining Smite" data-dmg="4d6" data-type="Radiant">ROLL SÁT THƯƠNG</button>
+                                            <button class="btn-bonus-action" id="btn-use-shining-smite">KÍCH HOẠT</button>
                                         </div>
                                         
                                         <!-- Trickster's Leap -->
@@ -764,7 +768,7 @@
             </div>
 
             <!-- Khu vực đồ họa xúc xắc quay (Dice animation wrapper) -->
-            <div class="dice-graphic-container">
+            <div class="dice-graphic-container" id="dice-graphic-container">
                 <div class="dice-d20-visual" id="dice-visual">
                     <!-- SVG d20 hoặc CSS 3D dice -->
                     <svg viewBox="0 0 100 100" class="d20-svg">
@@ -783,6 +787,26 @@
                         
                         <!-- Number Display in Center -->
                         <text x="50" y="58" font-family="'Cinzel', serif" font-weight="bold" font-size="22" fill="#ffffff" text-anchor="middle" id="dice-number-text">20</text>
+                    </svg>
+                </div>
+                <div class="dice-d20-visual" id="dice-visual-2" style="display: none;">
+                    <!-- SVG d20 hoặc CSS 3D dice -->
+                    <svg viewBox="0 0 100 100" class="d20-svg">
+                        <polygon points="50,5 95,30 95,70 50,95 5,70 5,30" fill="rgba(20,20,20,0.8)" stroke="#ff6f2a" stroke-width="2"/>
+                        <!-- Top triangle -->
+                        <polygon points="50,5 25,40 75,40" fill="rgba(255,111,42,0.15)" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <!-- Other panels -->
+                        <polygon points="5,30 25,40 50,5" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="95,30 75,40 50,5" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="5,30 25,40 5,70" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="95,30 75,40 95,70" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        
+                        <polygon points="25,40 50,95 5,70" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="75,40 50,95 95,70" fill="none" stroke="#ff6f2a" stroke-width="1.5"/>
+                        <polygon points="25,40 75,40 50,95" fill="rgba(255,111,42,0.05)" stroke="#ff6f2a" stroke-width="1.5"/>
+                        
+                        <!-- Number Display in Center -->
+                        <text x="50" y="58" font-family="'Cinzel', serif" font-weight="bold" font-size="22" fill="#ffffff" text-anchor="middle" id="dice-number-text-2">20</text>
                     </svg>
                 </div>
             </div>
@@ -815,6 +839,24 @@
                     <button class="btn-strike-toggle crit" id="btn-oa-crit-toggle" style="height: 35px; width: 65px; margin-left: 15px; margin-top: 0;">CRIT</button>
                 </div>
                 <button class="btn-dismiss-roll" id="btn-oa-roll-damage" style="background: var(--color-accent-orange); border-color: var(--color-accent-orange); width: 100%; margin-top: 0;">ROLL SÁT THƯƠNG</button>
+            </div>
+
+            <!-- Bảng thiết lập kiểm tra Concentration (Manual & Auto) -->
+            <div id="dice-modal-con-setup" style="display: none; flex-direction: column; align-items: center; margin-top: 20px; width: 100%; gap: 15px;">
+                <div id="con-dc-display" style="font-size: 1.05rem; font-weight: bold; color: var(--color-accent-gold); font-family: var(--font-heading); text-align: center; text-transform: uppercase;">
+                    KIỂM TRA TẬP TRUNG (CONCENTRATION)
+                </div>
+                <div style="display: flex; gap: 10px; width: 100%; justify-content: center;">
+                    <button class="btn-rest" id="btn-con-disadv" style="flex: 1; padding: 10px; font-weight: bold; border-color: rgba(231, 76, 60, 0.3); color: var(--color-danger); margin-top: 0;">DISADVANTAGE</button>
+                    <button class="btn-rest" id="btn-con-normal" style="flex: 1; padding: 10px; font-weight: bold; border-color: rgba(255, 255, 255, 0.15); color: #ffffff; margin-top: 0;">ROLL D20</button>
+                    <button class="btn-rest" id="btn-con-adv" style="flex: 1; padding: 10px; font-weight: bold; border-color: rgba(46, 204, 113, 0.3); color: var(--color-success); margin-top: 0;">ADVANTAGE</button>
+                </div>
+            </div>
+
+            <!-- Nút chọn kết quả thủ công cho Concentration Check thủ công -->
+            <div class="dice-modal-con-manual-buttons" id="dice-modal-con-manual-buttons" style="display: none; gap: 15px; justify-content: center; margin-top: 25px; width: 100%;">
+                <button class="btn-dismiss-roll" id="btn-con-success" style="background: var(--color-success); border-color: var(--color-success); margin-top: 0; flex: 1; padding: 10px 15px; font-size: 0.8rem; font-weight: bold;">SUCCESS (THÀNH CÔNG)</button>
+                <button class="btn-dismiss-roll" id="btn-con-fail" style="background: var(--color-danger); border-color: var(--color-danger); margin-top: 0; flex: 1; padding: 10px 15px; font-size: 0.8rem; font-weight: bold;">FAIL (THẤT BẠI)</button>
             </div>
 
             <button class="btn-dismiss-roll" id="btn-dismiss-roll">ĐỒNG Ý</button>
